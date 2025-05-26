@@ -1,12 +1,11 @@
-<template>
-  <div id="app">
-    <!-- (필요하다면 여기에 전역 헤더/네비게이션 추가) -->
-    <DashBoard />
-  </div>
+<template lang="pug">
+#app
+  //- (필요하다면 여기에 전역 헤더/네비게이션 추가)
+  router-view
 </template>
 
 <script setup>
-import DashBoard from '@/views/DashBoard.vue'
+// 라우터를 사용하므로 직접 컴포넌트 import 불필요
 </script>
 
 <style>
