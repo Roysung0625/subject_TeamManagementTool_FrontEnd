@@ -7,24 +7,7 @@ import { ref, computed } from 'vue'
  */
 export const useTaskStore = defineStore('task', () => {
   // 상태
-  const tasks = ref([
-    { 
-      id: 1, 
-      title: '로그인 페이지 개발', 
-      due: '2024-03-20',
-      status: 'in-progress',
-      assignee: '김철수',
-      priority: 'high'
-    },
-    { 
-      id: 2, 
-      title: '회원가입 API 개발', 
-      due: '2024-03-21',
-      status: 'todo',
-      assignee: '이영희',
-      priority: 'medium'
-    }
-  ])
+  const tasks = ref([])
 
   const filter = ref({
     status: 'all',

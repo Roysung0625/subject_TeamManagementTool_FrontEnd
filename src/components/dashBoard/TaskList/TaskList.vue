@@ -2,75 +2,54 @@
 .panel.task-list
   .panel-header
     span Task List
-    .filter-controls
-      select(v-model="localFilter.status")
-        option(value="all") All Status
-        option(value="todo") Todo
-        option(value="in-progress") In Progress
-        option(value="done") Done
-      select(v-model="localFilter.priority")
-        option(value="all") All Priority
-        option(value="high") High
-        option(value="medium") Medium
-        option(value="low") Low
   .loading(v-if="loading") Loading...
   ul.panel-body(v-else)
     TaskItem(
-      v-for="task in filteredTasks"
+      v-for="task in tasks"
       :key="task.id"
       :task="task"
-      @status-change="(status) => $emit('statusChange', task.id, status)"
-      @delete="() => $emit('delete', task.id)"
     )
 </template>
 
 <script setup>
-import { ref, computed, watch, defineProps, defineEmits } from 'vue'
+/* eslint-disable */
+import { ref, computed, watch, onMounted } from 'vue'
 // eslint-disable-next-line no-unused-vars
 import TaskItem from './TaskItem.vue'
+import {useAuthStore} from '@/stores/auth'
+import { taskService } from '@/services/taskService'
 
-const props = defineProps({
-  tasks: {
-    type: Array,
-    required: true,
-    default: () => []
-  },
-  loading: {
-    type: Boolean,
-    default: false
-  },
-  filter: {
-    type: Object,
-    default: () => ({
-      status: 'all',
-      priority: 'all',
-      assignee: null
-    })
-  }
-})
+const authStore = useAuthStore()
+const memberId = authStore.memberId
+
+const tasks = ref([])
+
 
 defineEmits(['statusChange', 'delete'])
 
-// Local filter state to avoid prop mutation
-const localFilter = ref({
-  status: props.filter.status,
-  priority: props.filter.priority,
-  assignee: props.filter.assignee
-})
+async function fetchTaskList() {
+  console.log('fetchTaskList in TaskList.vue 호출됨')
+  const numericMemberId = Number(memberId.value)
+  
+  isLoading.value = true
+  
+  try {
+    console.log('멤버 태스크 today 목록 in TaskList.vue 로드 중:', numericMemberId)
+    const response = await taskService.getEmployeeTodayTasks(numericMemberId)
+    //배열 형태로 제대로 오는지 검증
+    tasks.value = Array.isArray(response) ? response : []
+    console.log('멤버 태스크 today 목록 in TaskList.vue 로드 완료:', numericMemberId)
+  } catch (err) {
+    console.error('멤버 태스크 today 목록을 in TaskList.vue 가져오는 중 오류 발생:', err)
+    error.value = err.message || '멤버 태스크 today 목록을 in TaskList.vue 가져오는 중 오류가 발생했습니다.'
+    tasks.value = []
+  } finally {
+    isLoading.value = false
+  }
+}
 
-// Watch for prop changes
-watch(() => props.filter, (newFilter) => {
-  localFilter.value = { ...newFilter }
-}, { deep: true })
-
-// eslint-disable-next-line no-unused-vars
-const filteredTasks = computed(() => {
-  return props.tasks.filter(task => {
-    if (localFilter.value.status !== 'all' && task.status !== localFilter.value.status) return false
-    if (localFilter.value.priority !== 'all' && task.priority !== localFilter.value.priority) return false
-    if (localFilter.value.assignee && task.assignee !== localFilter.value.assignee) return false
-    return true
-  })
+onMounted(() => {
+  fetchTaskList()
 })
 </script>
 

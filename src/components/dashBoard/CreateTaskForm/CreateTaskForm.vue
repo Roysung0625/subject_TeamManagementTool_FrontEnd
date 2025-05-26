@@ -11,18 +11,13 @@
       type="date"
       v-model="form.due"
     )
-    select(v-model="form.assignee")
+    select(v-model="form.assignee" v-if="currentMemberRole === 'Admin'")
       option(value="") Select Assignee
       option(
         v-for="member in members"
         :key="member.id"
         :value="member.name"
       ) {{ member.name }}
-    select(v-model="form.priority")
-      option(value="") Select Priority
-      option(value="high") High
-      option(value="medium") Medium
-      option(value="low") Low
     textarea(
       v-model="form.description"
       placeholder="Description"
@@ -34,13 +29,18 @@
 </template>
 
 <script setup>
-import { reactive, defineProps, defineEmits } from 'vue'
+/* eslint-disable */
+import { reactive, defineProps, defineEmits, ref, watch } from 'vue'
+import { useAuthStore } from '@/stores/auth'
 
-// eslint-disable-next-line no-unused-vars
+const authStore = useAuthStore()
+const memberId = authStore.userId
+const currentMemberRole = authStore.userRole
+
 const props = defineProps({
   members: {
     type: Array,
-    default: () => []
+    required: true
   },
   teams: {
     type: Array,
@@ -49,6 +49,15 @@ const props = defineProps({
   loading: {
     type: Boolean,
     default: false
+  },
+  currentMemberRole: {
+    type: String,
+    required: true,
+    default: 'Employee'
+  },
+  currentMemberName: {
+    type: String,
+    required: true
   }
 })
 
@@ -58,9 +67,16 @@ const form = reactive({
   title: '', 
   due: '', 
   description: '',
-  assignee: '',
+  assignee: props.currentMemberRole === 'Admin' ? '' : props.currentMemberName,
   priority: '',
   status: 'todo'
+})
+
+// watch를 추가하여 role이 Admin이 아닐 경우 항상 현재 사용자로 할당되도록 합니다
+watch(() => props.currentMemberRole, (newRole) => {
+  if (newRole !== 'Admin') {
+    form.assignee = props.currentMemberRole
+  }
 })
 
 // eslint-disable-next-line no-unused-vars
