@@ -1,72 +1,73 @@
 import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
 
-export const useTeamStore = defineStore('team', {
-  state: () => ({
-    teams: [
-      { 
-        id: 1, 
-        name: '프론트엔드 팀',
-        description: '웹 프론트엔드 개발팀',
-        memberCount: 5
-      },
-      { 
-        id: 2, 
-        name: '백엔드 팀',
-        description: 'API 개발팀',
-        memberCount: 4
-      }
-    ],
-    selectedTeam: null,
-    loading: false
-  }),
+/**
+ * 팀 관련 상태 관리 스토어
+ * Composition API 스타일로 구현
+ */
+export const useTeamStore = defineStore('team', () => {
+  // 상태
+  const teams = ref([])
+  const selectedTeam = ref(null)
+  const loading = ref(false)
+  const error = ref(null)
 
-  getters: {
-    getTeams: (state) => state.teams,
-    getSelectedTeam: (state) => state.selectedTeam,
-    isLoading: (state) => state.loading
-  },
+  // 계산된 속성
+  const getTeams = computed(() => teams.value)
+  const isLoading = computed(() => loading.value)
+  const teamCount = computed(() => teams.value.length)
+  const getSelectedTeam = computed(() => selectedTeam.value)
 
-  actions: {
-    setSelectedTeam(team) {
-      this.selectedTeam = team
-    },
+  // 액션
+  /**
+   * 선택된 팀 설정
+   * @param {Object} team - 선택할 팀
+   */
+  function setSelectedTeam(team) {
+    selectedTeam.value = team
+  }
 
-    async addTeam(team) {
-      this.loading = true
-      try {
-        // TODO: API 호출
-        const newTeam = { id: Date.now(), ...team }
-        this.teams.push(newTeam)
-        return newTeam
-      } finally {
-        this.loading = false
-      }
-    },
+  /**
+   * 로딩 상태 설정
+   * @param {boolean} isLoading - 로딩 상태
+   */
+  function setLoading(isLoading) {
+    loading.value = isLoading
+  }
 
-    async updateTeam(teamId, updates) {
-      this.loading = true
-      try {
-        // TODO: API 호출
-        const team = this.teams.find(t => t.id === teamId)
-        if (team) {
-          Object.assign(team, updates)
-        }
-      } finally {
-        this.loading = false
-      }
-    },
+  /**
+   * 에러 설정
+   * @param {string} errorMessage - 에러 메시지
+   */
+  function setError(errorMessage) {
+    error.value = errorMessage
+  }
 
-    async deleteTeam(teamId) {
-      this.loading = true
-      try {
-        // TODO: API 호출
-        this.teams = this.teams.filter(t => t.id !== teamId)
-        if (this.selectedTeam?.id === teamId) {
-          this.selectedTeam = null
-        }
-      } finally {
-        this.loading = false
-      }
-    }
+  /**
+   * 에러 초기화
+   */
+  function clearError() {
+    error.value = null
+  }
+
+  // 스토어 반환
+  return {
+    // 상태
+    teams,
+    selectedTeam,
+    loading,
+    error,
+    
+    // 계산된 속성
+    getTeams,
+    getSelectedTeam,
+    isLoading,
+    teamCount,
+    
+    // 액션
+    setSelectedTeam,
+    setLoading,
+    setError,
+    clearError,
   }
 }) 

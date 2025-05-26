@@ -1,9 +1,5 @@
 <template lang="pug">
 .user-tag
-  img.profile-image(
-    :src="avatar"
-    :alt="username"
-  )
   .user-info
     span.name {{ username }}
     span.role {{ role }}
@@ -22,10 +18,6 @@ defineProps({
     type: String,
     required: true,
     default: 'No Role'
-  },
-  avatar: {
-    type: String,
-    default: '/avatars/default.png'
   }
 })
 </script>

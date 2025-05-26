@@ -1,86 +1,105 @@
 import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
 
-export const useTaskStore = defineStore('task', {
-  state: () => ({
-    tasks: [
-      { 
-        id: 1, 
-        title: '로그인 페이지 개발', 
-        due: '2024-03-20',
-        status: 'in-progress',
-        assignee: '김철수',
-        priority: 'high'
-      },
-      { 
-        id: 2, 
-        title: '회원가입 API 개발', 
-        due: '2024-03-21',
-        status: 'todo',
-        assignee: '이영희',
-        priority: 'medium'
-      }
-    ],
-    filter: {
+/**
+ * 태스크 관련 상태 관리 스토어
+ * Composition API 스타일로 구현
+ */
+export const useTaskStore = defineStore('task', () => {
+  // 상태
+  const tasks = ref([
+    { 
+      id: 1, 
+      title: '로그인 페이지 개발', 
+      due: '2024-03-20',
+      status: 'in-progress',
+      assignee: '김철수',
+      priority: 'high'
+    },
+    { 
+      id: 2, 
+      title: '회원가입 API 개발', 
+      due: '2024-03-21',
+      status: 'todo',
+      assignee: '이영희',
+      priority: 'medium'
+    }
+  ])
+
+  const filter = ref({
+    status: 'all',
+    priority: 'all',
+    assignee: null
+  })
+
+  const loading = ref(false)
+  const error = ref(null)
+
+  // 계산된 속성
+  const isLoading = computed(() => loading.value)
+  const taskCount = computed(() => tasks.value.length)
+
+  const getFilteredTasks = computed(() => {
+    return tasks.value.filter(task => {
+      if (filter.value.status !== 'all' && task.status !== filter.value.status) return false
+      if (filter.value.priority !== 'all' && task.priority !== filter.value.priority) return false
+      if (filter.value.assignee && task.assignee !== filter.value.assignee) return false
+      return true
+    })
+  })
+
+  const getTasksByStatus = computed(() => {
+    return {
+      todo: tasks.value.filter(task => task.status === 'todo'),
+      'in-progress': tasks.value.filter(task => task.status === 'in-progress'),
+      completed: tasks.value.filter(task => task.status === 'completed')
+    }
+  })
+
+  // 액션
+  /**
+   * 에러 설정
+   * @param {string} errorMessage - 에러 메시지
+   */
+  function setError(errorMessage) {
+    error.value = errorMessage
+  }
+
+  /**
+   * 에러 초기화
+   */
+  function clearError() {
+    error.value = null
+  }
+
+  /**
+   * 필터 초기화
+   */
+  function resetFilter() {
+    filter.value = {
       status: 'all',
       priority: 'all',
       assignee: null
-    },
-    loading: false
-  }),
+    }
+  }
 
-  getters: {
-    getTasks: (state) => state.tasks,
-    getFilter: (state) => state.filter,
-    isLoading: (state) => state.loading,
+  // 스토어 반환
+  return {
+    // 상태
+    tasks,
+    filter,
+    loading,
+    error,
     
-    getFilteredTasks: (state) => {
-      return state.tasks.filter(task => {
-        if (state.filter.status !== 'all' && task.status !== state.filter.status) return false
-        if (state.filter.priority !== 'all' && task.priority !== state.filter.priority) return false
-        if (state.filter.assignee && task.assignee !== state.filter.assignee) return false
-        return true
-      })
-    }
-  },
-
-  actions: {
-    setFilter(filter) {
-      this.filter = { ...this.filter, ...filter }
-    },
-
-    async addTask(task) {
-      this.loading = true
-      try {
-        // TODO: API 호출
-        const newTask = { id: Date.now(), ...task }
-        this.tasks.push(newTask)
-        return newTask
-      } finally {
-        this.loading = false
-      }
-    },
-
-    async updateTaskStatus(taskId, newStatus) {
-      this.loading = true
-      try {
-        // TODO: API 호출
-        const task = this.tasks.find(t => t.id === taskId)
-        if (task) {
-          task.status = newStatus
-        }
-      } finally {
-        this.loading = false
-      }
-    },
-
-    async deleteTask(taskId) {
-      this.loading = true
-      try {
-        // TODO: API 호출
-        this.tasks = this.tasks.filter(t => t.id !== taskId)
-      } finally {
-        this.loading = false
-      }
-    }
+    // 계산된 속성
+    isLoading,
+    taskCount,
+    getFilteredTasks,
+    getTasksByStatus,
+    
+    // 액션
+    setError,
+    clearError,
+    resetFilter
   }
 }) 

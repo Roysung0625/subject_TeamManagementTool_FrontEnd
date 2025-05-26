@@ -2,27 +2,21 @@
 .dashboard-grid
   //- 상단 사용자 정보
   UserTag(
-    :username="userStore.user.name"
-    :role="userStore.user.role"
-    :avatar="userStore.user.avatar"
+    :username="loginUserName"
+    :role="loginUserRole"
   )
 
-  //- 왼쪽: 팀 목록
+  //- 왼쪽: 팀 목록 (자체 관리)
   TeamList(
-    :teams="teamStore.teams"
-    :currentTeam="teamStore.selectedTeam"
-    :loading="teamStore.loading"
-    @add="handleAddTeam"
-    @edit="handleEditTeam"
-    @remove="handleDeleteTeam"
-    @select="handleSelectTeam"
+    @team-selected="handleTeamSelected"
+    @teams-updated="handleTeamsUpdated"
   )
 
   //- 중앙: 진행률 보드
   ProgressBoard(
     :members="memberList"
     :loading="loadingStates.progress"
-    :teamName="teamStore.selectedTeam?.name"
+    :teamName="selectedTeam?.name"
   )
 
   //- 오른쪽: 할 일 목록
@@ -38,7 +32,7 @@
   .bottom-container
     CreateTaskForm(
       :members="memberList"
-      :teams="teamStore.teams"
+      :teams="teams"
       :loading="taskStore.loading"
       @create="handleCreateTask"
     )
@@ -52,10 +46,12 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { useTeamStore } from '@/stores/team'
 import { useTaskStore } from '@/stores/task'
+import { useAuthStore } from '@/stores/auth'
+
 // eslint-disable-next-line no-unused-vars
 import TeamList from '@/components/dashBoard/TeamList/TeamList.vue'
 // eslint-disable-next-line no-unused-vars
@@ -74,8 +70,28 @@ import UserTag from '@/components/dashBoard/UserTag.vue'
 const userStore = useUserStore()
 const teamStore = useTeamStore()
 const taskStore = useTaskStore()
+const authStore = useAuthStore()
 
-// 멤버 관련 데이터
+//현재 로그인한 사용자 관련
+// eslint-disable-next-line no-unused-vars
+const loginUser = computed(() => authStore.user)
+// eslint-disable-next-line no-unused-vars
+const loginUserName = computed(() => loginUser.value?.name || '사용자')
+// eslint-disable-next-line no-unused-vars
+const loginUserRole = computed(() => {
+  const role = loginUser.value?.role
+  if (role === 'Admin') {
+    return '관리자'
+  } else if (role === 'Employee') {
+    return '직원'
+  }
+  return '직원'
+})
+
+// 팀 관련 상태 (TeamList에서 전달받음)
+const teams = ref([])
+const selectedTeam = ref(null)
+
 // eslint-disable-next-line no-unused-vars
 const memberList = ref([
   { 
@@ -118,28 +134,30 @@ const workspaceStats = ref({
   월간진행률: 70
 })
 
-// 이벤트 핸들러 함수들
+// TeamList에서 전달받는 이벤트 핸들러들
 // eslint-disable-next-line no-unused-vars
-async function handleAddTeam() {
-  // TODO: 팀 추가 모달 열기
-  console.log('팀 추가하기 클릭됨')
-}
-
-// eslint-disable-next-line no-unused-vars
-async function handleEditTeam(team) {
-  await teamStore.updateTeam(team.id, team)
-}
-
-// eslint-disable-next-line no-unused-vars
-async function handleDeleteTeam(team) {
-  await teamStore.deleteTeam(team.id)
-}
-
-// eslint-disable-next-line no-unused-vars
-function handleSelectTeam(team) {
+function handleTeamSelected(team) {
+  selectedTeam.value = team
+  
+  // teamStore에도 선택된 팀 설정
   teamStore.setSelectedTeam(team)
+  
+  console.log('선택된 팀:', team)
+  
+  // 선택된 팀에 따라 다른 컴포넌트들 업데이트
+  // 예: 해당 팀의 태스크 목록 로드, 멤버 목록 업데이트 등
 }
 
+// eslint-disable-next-line no-unused-vars
+function handleTeamsUpdated(updatedTeams) {
+  teams.value = updatedTeams
+  console.log('팀 목록 업데이트됨:', updatedTeams)
+  
+  // 통계 데이터 업데이트
+  workspaceStats.value.전체팀수 = updatedTeams.length
+}
+
+// 태스크 관련 이벤트 핸들러들
 // eslint-disable-next-line no-unused-vars
 async function handleTaskStatusChange(taskId, newStatus) {
   await taskStore.updateTaskStatus(taskId, newStatus)
@@ -155,6 +173,7 @@ async function handleCreateTask(newTask) {
   await taskStore.addTask(newTask)
 }
 
+// 통계 관련 이벤트 핸들러들
 // eslint-disable-next-line no-unused-vars
 function handleTeamDetails() {
   console.log('팀 상세 정보 보기')

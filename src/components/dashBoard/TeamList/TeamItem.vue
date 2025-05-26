@@ -6,7 +6,7 @@ li.team-item(
   .team-info
     h3 {{ team.name }}
     p.description {{ team.description }}
-    span.member-count Members: {{ team.memberCount }}
+    span.member-count Members: {{ team.members.length }}
   .team-actions
     button.edit-btn(
       @click.stop="$emit('edit', team)"
@@ -20,14 +20,11 @@ li.team-item(
 import { defineProps, defineEmits } from 'vue'
 
 defineProps({
+  //prop으로 받을 데이터
   team: {
     type: Object,
-    required: true,
-    validator: (team) => {
-      return ['id', 'name', 'description', 'memberCount'].every(
-        key => key in team
-      )
-    }
+    //반드시 전달해야함
+    required: true
   },
   isActive: {
     type: Boolean,

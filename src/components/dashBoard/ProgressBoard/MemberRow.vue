@@ -10,6 +10,11 @@ tr
 import { defineProps } from 'vue'
 // eslint-disable-next-line no-unused-vars
 import ProgressBar from './ProgressBar.vue'
+import { useTaskStore } from '@/stores/task'
+
+const taskStore = useTaskStore()
+const memberTasks = computed(() => taskStore.getTasksByMemberId(member.id))
+
 
 // props 정의
 defineProps({
