@@ -12,9 +12,9 @@ li.task-item(:class="currentStatus" @click="openModal")
       @click.stop
       :disabled="isUpdating"
     )
-      option(value="pending") Pending
-      option(value="in_progress") In Progress 
-      option(value="done") Done
+      option(value="pending") 待機
+      option(value="in_progress") 遂行中
+      option(value="done") 完了
     .error(v-if="error") {{ error }}
 </template>
 
