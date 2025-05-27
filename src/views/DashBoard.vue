@@ -8,19 +8,20 @@
 
   //- 왼쪽: 팀 목록 (자체 관리)
   TeamList(
+    ref="teamListRef"
     @team-selected="handleTeamSelected"
     @teams-updated="handleTeamsUpdated"
   )
 
   //- 중앙: 진행률 보드
   ProgressBoard(
+    ref="progressBoardRef"
     :selectedTeam="selectedTeam"
     :loading="loadingStates.progress"
   )
 
   //- 오른쪽: 할 일 목록
   TaskList(
-    ref="taskListRef"
     :selectedTeam="selectedTeam"
     @task-status-change="handleTaskStatusChange"
     @delete-task="handleDeleteTask"
@@ -121,6 +122,7 @@ const workspaceStats = ref({})
 
 // Template Ref 추가
 const taskListRef = ref(null)
+const progressBoardRef = ref(null)
 
 // 모달 상태
 const showWorkspaceModal = ref(false)
@@ -195,6 +197,7 @@ function handleWorkspaceDetails() {
 
 function handleCloseWorkspaceModal() {
   showWorkspaceModal.value = false
+  progressBoardRef.value.fetchMemberList()
 }
 </script>
 

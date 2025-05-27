@@ -22,7 +22,7 @@
 
 <script setup>
 /* eslint-disable */
-import { defineProps, onMounted, ref, computed, watch } from 'vue'
+import { defineProps, onMounted, ref, computed, watch, defineExpose } from 'vue'
 // eslint-disable-next-line no-unused-vars
 import MemberRow from './MemberRow.vue'
 import { useTeamStore } from '@/stores/team'
@@ -135,6 +135,11 @@ onMounted(() => {
   if (currentTeamId.value) {
     fetchMemberList()
   }
+})
+
+// 외부에서 사용할 수 있도록 함수와 상태 expose
+defineExpose({
+  fetchMemberList
 })
 </script>
 
