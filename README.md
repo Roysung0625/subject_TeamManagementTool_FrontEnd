@@ -208,19 +208,6 @@ const authStore = useAuthStore()
 const teamStore = useTeamStore()
 ```
 
-### 3. ルートガード実装
-```javascript
-router.beforeEach((to, from, next) => {
-  const authStore = useAuthStore()
-  
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    next('/login')
-    return
-  }
-  next()
-})
-```
-
 ## 🔄 状態管理フロー
 
 1. **認証フロー**
