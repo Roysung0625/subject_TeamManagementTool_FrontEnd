@@ -1,14 +1,14 @@
 <template lang="pug">
 .user-tag
   .user-info
-    span.name {{ username }}
-    span.role {{ role }}
+    span.name {{ props.username }}
+    span.role {{ props.role}}
 </template>
 
 <script setup>
 import { defineProps } from 'vue'
 
-defineProps({
+const props = defineProps({
   username: {
     type: String,
     required: true,
@@ -20,6 +20,8 @@ defineProps({
     default: 'No Role'
   }
 })
+console.log('in UserTag.vue props : ', props.username, props.role)
+
 </script>
 
 <style scoped>

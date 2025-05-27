@@ -21,10 +21,9 @@
         :value="member.id"
       ) {{ member.name }}
     select(v-model="form.status" :disabled="isCreating")
-      option(value="pending") Pending
-      option(value="in_progress") In Progress
-      option(value="completed") Completed
-      option(value="cancelled") Cancelled
+      option(value="pending") 待機
+      option(value="in_progress") 遂行中
+      option(value="done") 完了
     input(
       v-model="form.category"
       placeholder="Category (e.g., work, personal, urgent)"

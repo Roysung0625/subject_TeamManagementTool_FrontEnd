@@ -132,6 +132,10 @@ const disableFilter = computed(() => {
 function applySearch() {
     categorySearched.value = true
 }
+watch(currentPage, (newPage) => {
+    console.log("currentPage changed to", newPage)
+    fetchTeamDetails()
+})
 
 async function fetchTeamDetails() {
     if (!selectedTeam.value?.id) return
@@ -196,7 +200,7 @@ async function applyStatusFilter() {
 
 async function applyCategorySearch() {
     currentPage.value = 1
-    const option = {category: selectedStatus.value
+    const option = {category: selectedCategory.value
         , offset : (currentPage.value - 1) * itemsPerPage.value
         , limit : itemsPerPage.value}
     try{

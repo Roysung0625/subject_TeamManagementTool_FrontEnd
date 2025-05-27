@@ -2,8 +2,8 @@
 .dashboard-grid
   //- 上部ユーザー情報
   UserTag(
-    :userName="loginUserName"
-    :userRole="loginUserRole"
+    :username="loginUserName"
+    :role="loginUserRole"
   )
 
   //- 左側：チームリスト（自己管理）
