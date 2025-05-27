@@ -47,13 +47,6 @@
           full-width
           @click="goToRegister"
         ) 会員登録
-    
-    UserInfo(
-      v-if="authStore.isAuthenticated"
-      :user="authStore.user"
-      title="ログイン情報"
-      @logout="handleLogout"
-    )
 </template>
 
 <script setup>

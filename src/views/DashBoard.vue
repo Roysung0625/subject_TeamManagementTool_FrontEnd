@@ -22,6 +22,7 @@
 
   //- 右側：ToDoリスト
   TaskList(
+    ref="taskListRef"
     :selectedTeam="selectedTeam"
     @task-status-change="handleTaskStatusChange"
     @delete-task="handleDeleteTask"
@@ -192,6 +193,12 @@ function handleTeamDetails() {
 // eslint-disable-next-line no-unused-vars
 function handleWorkspaceDetails() {
   console.log('ワークスペース詳細情報表示')
+  if(teamStore.selectedTeam){
+    router.push(`/teamtasks`)
+  }else{
+    alert('チームが選択されていません。')
+    return
+  }
   showWorkspaceModal.value = true
 }
 
