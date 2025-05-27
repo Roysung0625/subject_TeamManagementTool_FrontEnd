@@ -2,41 +2,41 @@ import apiClient from '@/utils/apiClient'
 import { API_ENDPOINTS } from '@/config/api'
 import { useAuthStore } from '@/stores/auth'
 
-// 인증 관련 API 서비스
+// 認証関連APIサービス
 export const authService = {
   /**
-   * 사용자 등록
-   * @param {Object} userData - 등록할 사용자 정보
-   * @param {string} userData.password - 비밀번호
-   * @param {string} userData.name - 사용자 이름
-   * @returns {Promise<Object>} 등록된 사용자 정보
-   * @throws {Error} API 요청 실패 시 에러
+   * ユーザー登録
+   * @param {Object} userData - 登録するユーザー情報
+   * @param {string} userData.password - パスワード
+   * @param {string} userData.name - ユーザー名
+   * @returns {Promise<Object>} 登録されたユーザー情報
+   * @throws {Error} APIリクエスト失敗時エラー
    */
   async register(userData) {
     const authStore = useAuthStore()
     try {
       const data = await apiClient.post(API_ENDPOINTS.AUTH.REGISTER, userData)
 
-      // 토큰 저장
+      // トークン保存
       if (data.token) {
         apiClient.setToken(data.token)
       }
-      //인증 데이터(token, employee) 저장
+      // 認証データ(token, employee)保存
       authStore.setAuthData(data)
 
       return data
     } catch (error) {
-      console.error('사용자 등록 실패:', error)
+      console.error('ユーザー登録失敗:', error)
       throw error
     }
   },
 
   /**
-   * 로그인
-   * @param {Object} credentials - 로그인 정보
-   * @param {string} credentials.password - 비밀번호
-   * @returns {Promise<Object>} 로그인 결과 (토큰 포함)
-   * @throws {Error} API 요청 실패 시 에러
+   * ログイン
+   * @param {Object} credentials - ログイン情報
+   * @param {string} credentials.password - パスワード
+   * @returns {Promise<Object>} ログイン結果（トークン含む）
+   * @throws {Error} APIリクエスト失敗時エラー
    */
   async login(credentials) {
     const authStore = useAuthStore()
@@ -44,44 +44,44 @@ export const authService = {
       const data = await apiClient.post(API_ENDPOINTS.AUTH.LOGIN, credentials)
       console.log('data in authService.js', data)
       
-      // 로그인 성공 시 토큰 저장
+      // ログイン成功時トークン保存
       if (data.token) {
         apiClient.setToken(data.token)
       }
-      //인증 데이터(token, employee) 저장
+      // 認証データ(token, employee)保存
       authStore.setAuthData(data)
       console.log('authStore.user in authService.js', authStore.user.value)
 
       return data
     } catch (error) {
-      console.error('로그인 실패:', error)
+      console.error('ログイン失敗:', error)
       throw error
     }
   },
 
   /**
-   * 로그아웃
-   * @returns {Promise<Object|null>} 로그아웃 결과
-   * @throws {Error} API 요청 실패 시 에러
+   * ログアウト
+   * @returns {Promise<Object|null>} ログアウト結果
+   * @throws {Error} APIリクエスト失敗時エラー
    */
   async logout() {
     try {
       const data = await apiClient.post(API_ENDPOINTS.AUTH.LOGOUT)
       
-      // 로그아웃 시 토큰 제거
+      // ログアウト時トークン削除
       apiClient.clearToken()
       localStorage.removeItem('auth_token')
       
       return data
     } catch (error) {
-      console.error('로그아웃 실패:', error)
+      console.error('ログアウト失敗:', error)
       throw error
     }
   },
 
   /**
-   * 토큰 설정 (앱 시작 시 저장된 토큰 복원용)
-   * @returns {string|null} 설정된 토큰 또는 null
+   * トークン設定（アプリ開始時保存されたトークン復元用）
+   * @returns {string|null} 設定されたトークンまたはnull
    */
   setStoredToken() {
     const token = localStorage.getItem('auth_token')
@@ -93,16 +93,16 @@ export const authService = {
   },
 
   /**
-   * 현재 토큰 확인
-   * @returns {string|null} 현재 저장된 토큰 또는 null
+   * 現在のトークン確認
+   * @returns {string|null} 現在保存されているトークンまたはnull
    */
   getCurrentToken() {
     return localStorage.getItem('auth_token')
   },
 
   /**
-   * 로그인 상태 확인
-   * @returns {boolean} 로그인 여부 (true: 로그인됨, false: 로그인 안됨)
+   * ログイン状態確認
+   * @returns {boolean} ログイン状況（true: ログイン済み, false: 未ログイン）
    */
   isAuthenticated() {
     return !!this.getCurrentToken()

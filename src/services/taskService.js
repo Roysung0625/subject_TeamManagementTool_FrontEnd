@@ -1,113 +1,113 @@
 import apiClient from '@/utils/apiClient'
 import { API_ENDPOINTS, API_CONFIG } from '@/config/api'
 
-// 태스크 관련 API 서비스
+// タスク関連APIサービス
 export const taskService = {
   /**
-   * 태스크 생성 (본인 또는 Admin)
-   * @param {Object} taskData - 생성할 태스크 정보
-   * @param {string} taskData.title - 태스크 제목
-   * @param {string} [taskData.description] - 태스크 설명
-   * @param {string} taskData.category - 태스크 카테고리
-   * @param {string} taskData.status - 태스크 상태 (예: 'pending', 'in_progress', 'completed')
-   * @param {number} taskData.employee_id - 담당자 ID
-   * @param {string} [taskData.due_date] - 마감일 (YYYY-MM-DD 형식)
-   * @param {string} [taskData.priority] - 우선순위 (예: 'low', 'medium', 'high')
-   * @returns {Promise<Object>} 생성된 태스크 정보
-   * @throws {Error} API 요청 실패 시 에러
+   * タスク作成（本人またはAdmin）
+   * @param {Object} taskData - 作成するタスク情報
+   * @param {string} taskData.title - タスクタイトル
+   * @param {string} [taskData.description] - タスク説明
+   * @param {string} taskData.category - タスクカテゴリ
+   * @param {string} taskData.status - タスクステータス（例：'pending', 'in_progress', 'completed'）
+   * @param {number} taskData.employee_id - 担当者ID
+   * @param {string} [taskData.due_date] - 期限（YYYY-MM-DD形式）
+   * @param {string} [taskData.priority] - 優先度（例：'low', 'medium', 'high'）
+   * @returns {Promise<Object>} 作成されたタスク情報
+   * @throws {Error} APIリクエスト失敗時エラー
    */
   async createTask(taskData) {
     try {
       const data = await apiClient.post(API_ENDPOINTS.TASKS.CREATE, taskData)
       return data
     } catch (error) {
-      console.error('태스크 생성 실패:', error)
+      console.error('タスク作成失敗:', error)
       throw error
     }
   },
 
   /**
-   * 태스크 수정 (소유자 또는 Admin)
-   * @param {number|string} taskId - 수정할 태스크 ID
-   * @param {Object} taskData - 수정할 태스크 정보
-   * @param {string} [taskData.title] - 태스크 제목
-   * @param {string} [taskData.description] - 태스크 설명
-   * @param {string} [taskData.category] - 태스크 카테고리
-   * @param {string} [taskData.status] - 태스크 상태
-   * @param {number} [taskData.employee_id] - 담당자 ID
-   * @param {string} [taskData.due_date] - 마감일
-   * @param {string} [taskData.priority] - 우선순위
-   * @returns {Promise<Object>} 수정된 태스크 정보
-   * @throws {Error} API 요청 실패 시 에러
+   * タスク修正（所有者またはAdmin）
+   * @param {number|string} taskId - 修正するタスクID
+   * @param {Object} taskData - 修正するタスク情報
+   * @param {string} [taskData.title] - タスクタイトル
+   * @param {string} [taskData.description] - タスク説明
+   * @param {string} [taskData.category] - タスクカテゴリ
+   * @param {string} [taskData.status] - タスクステータス
+   * @param {number} [taskData.employee_id] - 担当者ID
+   * @param {string} [taskData.due_date] - 期限
+   * @param {string} [taskData.priority] - 優先度
+   * @returns {Promise<Object>} 修正されたタスク情報
+   * @throws {Error} APIリクエスト失敗時エラー
    */
   async updateTask(taskId, taskData) {
     try {
       const data = await apiClient.patch(API_ENDPOINTS.TASKS.UPDATE(taskId), taskData)
       return data
     } catch (error) {
-      console.error('태스크 수정 실패:', error)
+      console.error('タスク修正失敗:', error)
       throw error
     }
   },
 
   /**
-   * 태스크 삭제 (소유자 또는 Admin)
-   * @param {number|string} taskId - 삭제할 태스크 ID
-   * @returns {Promise<Object|null>} 삭제 결과 (204 No Content인 경우 null)
-   * @throws {Error} API 요청 실패 시 에러
+   * タスク削除（所有者またはAdmin）
+   * @param {number|string} taskId - 削除するタスクID
+   * @returns {Promise<Object|null>} 削除結果（204 No Contentの場合null）
+   * @throws {Error} APIリクエスト失敗時エラー
    */
   async deleteTask(taskId) {
     try {
       const data = await apiClient.delete(API_ENDPOINTS.TASKS.DELETE(taskId))
       return data
     } catch (error) {
-      console.error('태스크 삭제 실패:', error)
+      console.error('タスク削除失敗:', error)
       throw error
     }
   },
 
   /**
-   * 특정 태스크 상세 조회 (인증 필요)
-   * @param {number|string} taskId - 조회할 태스크 ID
-   * @returns {Promise<Object>} 태스크 상세 정보
-   * @throws {Error} API 요청 실패 시 에러
+   * 特定タスク詳細照会（認証必要）
+   * @param {number|string} taskId - 照会するタスクID
+   * @returns {Promise<Object>} タスク詳細情報
+   * @throws {Error} APIリクエスト失敗時エラー
    */
   async getTaskDetail(taskId) {
     try {
       const data = await apiClient.get(API_ENDPOINTS.TASKS.DETAIL(taskId))
       return data
     } catch (error) {
-      console.error('태스크 상세 조회 실패:', error)
+      console.error('タスク詳細照会失敗:', error)
       throw error
     }
   },
 
   /**
-   * 특정 사원의 오늘 태스크 조회 (인증 필요)
-   * @param {number|string} employeeId - 사원 ID
-   * @returns {Promise<Array>} 오늘 태스크 목록 배열
-   * @throws {Error} API 요청 실패 시 에러
+   * 特定社員の今日のタスク照会（認証必要）
+   * @param {number|string} employeeId - 社員ID
+   * @returns {Promise<Array>} 今日のタスクリスト配列
+   * @throws {Error} APIリクエスト失敗時エラー
    */
   async getEmployeeTodayTasks(employeeId) {
     try {
       const data = await apiClient.get(API_ENDPOINTS.TASKS.BY_EMPLOYEE_TODAY(employeeId))
       return data
     } catch (error) {
-      console.error('사원 오늘 태스크 조회 실패:', error)
+      console.error('社員今日のタスク照会失敗:', error)
       throw error
     }
   },
 
   /**
-   * 특정 사원의 모든 태스크 조회 (페이지네이션)
-   * @param {number|string} employeeId - 사원 ID
-   * @param {Object} [options={}] - 조회 옵션
-   * @param {number} [options.offset=0] - 페이지네이션 오프셋
-   * @param {Object} [options.filters] - 필터 조건
-   * @param {string} [options.filters.category] - 카테고리 필터
-   * @param {string} [options.filters.status] - 상태 필터
-   * @returns {Promise<Object>} 태스크 목록과 페이지네이션 정보
-   * @throws {Error} API 요청 실패 시 에러
+   * 特定社員の全タスク照会（ページネーション）
+   * @param {number|string} employeeId - 社員ID
+   * @param {Object} [options={}] - 照会オプション
+   * @param {number} [options.offset=0] - ページネーションオフセット
+   * @param {Object} [options.filters] - フィルター条件
+   * @param {string} [options.filters.category] - カテゴリフィルター
+   * @param {string} [options.filters.status] - ステータスフィルター
+   * @returns {Promise<Object>} タスクリストとページネーション情報
+   * @throws {Error} APIリクエスト失敗時エラー
    */
   async getEmployeeTasks(employeeId, options = {}) {
     try {
@@ -122,22 +122,22 @@ export const taskService = {
       )
       return data
     } catch (error) {
-      console.error('사원 태스크 조회 실패:', error)
+      console.error('社員タスク照会失敗:', error)
       throw error
     }
   },
 
   /**
-   * 특정 팀의 모든 태스크 조회 (필터링 + 페이지네이션)
-   * @param {number|string} teamId - 팀 ID
-   * @param {Object} [options={}] - 조회 옵션
-   * @param {number} [options.offset=0] - 페이지네이션 오프셋
-   * @param {string} [options.category] - 카테고리 필터
-   * @param {string} [options.status] - 상태 필터
-   * @param {number} [options.employee_id] - 특정 사원 필터
-   * @param {Object} [options.filters] - 추가 필터 조건
-   * @returns {Promise<Object>} 태스크 목록과 페이지네이션 정보
-   * @throws {Error} API 요청 실패 시 에러
+   * 特定チームの全タスク照会（フィルタリング + ページネーション）
+   * @param {number|string} teamId - チームID
+   * @param {Object} [options={}] - 照会オプション
+   * @param {number} [options.offset=0] - ページネーションオフセット
+   * @param {string} [options.category] - カテゴリフィルター
+   * @param {string} [options.status] - ステータスフィルター
+   * @param {number} [options.employee_id] - 特定社員フィルター
+   * @param {Object} [options.filters] - 追加フィルター条件
+   * @returns {Promise<Object>} タスクリストとページネーション情報
+   * @throws {Error} APIリクエスト失敗時エラー
    */
   async getTeamTasks(teamId, options = {}) {
     try {
@@ -155,32 +155,32 @@ export const taskService = {
       )
       return data
     } catch (error) {
-      console.error('팀 태스크 조회 실패:', error)
+      console.error('チームタスク照会失敗:', error)
       throw error
     }
   },
 
   /**
-   * 특정 팀의 오늘 태스크 조회 (인증 필요)
-   * @param {number|string} teamId - 팀 ID
-   * @returns {Promise<Array>} 오늘 태스크 목록 배열
-   * @throws {Error} API 요청 실패 시 에러
+   * 特定チームの今日のタスク照会（認証必要）
+   * @param {number|string} teamId - チームID
+   * @returns {Promise<Array>} 今日のタスクリスト配列
+   * @throws {Error} APIリクエスト失敗時エラー
    */
   async getTeamTodayTasks(teamId) {
     try {
       const data = await apiClient.get(API_ENDPOINTS.TASKS.BY_TEAM_TODAY(teamId))
       return data
     } catch (error) {
-      console.error('팀 오늘 태스크 조회 실패:', error)
+      console.error('チーム今日のタスク照会失敗:', error)
       throw error
     }
   },
 
   /**
-   * 페이지네이션 헬퍼 함수
-   * @param {number} [page=1] - 페이지 번호 (1부터 시작)
-   * @param {number} [pageSize=API_CONFIG.DEFAULT_PAGE_SIZE] - 페이지당 항목 수
-   * @returns {Object} 페이지네이션 매개변수 객체
+   * ページネーションヘルパー関数
+   * @param {number} [page=1] - ページ番号（1から開始）
+   * @param {number} [pageSize=API_CONFIG.DEFAULT_PAGE_SIZE] - ページあたりの項目数
+   * @returns {Object} ページネーションパラメータオブジェクト
    */
   buildPaginationParams(page = 1, pageSize = API_CONFIG.DEFAULT_PAGE_SIZE) {
     return {
@@ -189,12 +189,12 @@ export const taskService = {
   },
 
   /**
-   * 필터 헬퍼 함수
-   * @param {Object} [filters={}] - 필터 조건
-   * @param {string} [filters.category] - 카테고리 필터
-   * @param {string} [filters.status] - 상태 필터
-   * @param {number} [filters.employee_id] - 사원 ID 필터
-   * @returns {Object} 유효한 필터 매개변수 객체
+   * フィルターヘルパー関数
+   * @param {Object} [filters={}] - フィルター条件
+   * @param {string} [filters.category] - カテゴリフィルター
+   * @param {string} [filters.status] - ステータスフィルター
+   * @param {number} [filters.employee_id] - 社員IDフィルター
+   * @returns {Object} 有効なフィルターパラメータオブジェクト
    */
   buildFilterParams(filters = {}) {
     const validFilters = {}
