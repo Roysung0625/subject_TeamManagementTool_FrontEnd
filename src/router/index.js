@@ -3,6 +3,7 @@ import { useAuthStore } from '@/stores/auth'
 import LoginForm from '@/views/LoginForm.vue'
 import RegisterForm from '@/views/RegisterForm.vue'
 import Dashboard from '@/views/DashBoard.vue'
+import TeamTasksDetail from '@/views/TeamTasksDetail.vue'
 
 const routes = [
   {
@@ -25,6 +26,12 @@ const routes = [
     path: '/dashboard',
     name: 'Dashboard',
     component: Dashboard,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/teamtasks',
+    name: 'TeamTasksDetail',
+    component: TeamTasksDetail,
     meta: { requiresAuth: true }
   }
 ]

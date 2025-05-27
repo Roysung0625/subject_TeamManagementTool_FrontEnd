@@ -2,8 +2,8 @@
 .dashboard-grid
   //- 상단 사용자 정보
   UserTag(
-    :username="loginUserName"
-    :role="loginUserRole"
+    :userName="loginUserName"
+    :userRole="loginUserRole"
   )
 
   //- 왼쪽: 팀 목록 (자체 관리)
@@ -14,26 +14,24 @@
 
   //- 중앙: 진행률 보드
   ProgressBoard(
-    :members="memberList"
+    :selectedTeam="selectedTeam"
     :loading="loadingStates.progress"
-    :teamName="selectedTeam?.name"
   )
 
   //- 오른쪽: 할 일 목록
   TaskList(
     ref="taskListRef"
-    @statusChange="handleTaskStatusChange"
-    @delete="handleDeleteTask"
+    :selectedTeam="selectedTeam"
+    @task-status-change="handleTaskStatusChange"
+    @delete-task="handleDeleteTask"
   )
 
   //- 하단: 2:1 비율 컨테이너
   .bottom-container
     CreateTaskForm(
-      :members="memberList"
-      :teams="teams"
-      :loading="taskStore.loading"
-      @create="handleCreateTask"
+      :selectedTeam="selectedTeam"
       @task-created="handleTaskCreated"
+      @create-task="handleCreateTask"
     )
     OverviewPanel(
       :teamStats="teamStats"
@@ -42,11 +40,18 @@
       @team-details="handleTeamDetails"
       @workspace-details="handleWorkspaceDetails"
     )
+
+  //- Workspace Modal
+  WorkspaceModal(
+    :isVisible="showWorkspaceModal"
+    @close="handleCloseWorkspaceModal"
+  )
 </template>
 
 <script setup>
 /* eslint-disable */
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { useTeamStore } from '@/stores/team'
 import { useTaskStore } from '@/stores/task'
@@ -64,6 +69,11 @@ import CreateTaskForm from '@/components/dashBoard/CreateTaskForm/CreateTaskForm
 import OverviewPanel from '@/components/dashBoard/OverviewPanel/OverviewPanel.vue'
 // eslint-disable-next-line no-unused-vars
 import UserTag from '@/components/dashBoard/UserTag.vue'
+// eslint-disable-next-line no-unused-vars
+import WorkspaceModal from '@/components/dashBoard/WorkspaceModal.vue'
+
+// Router 추가
+const router = useRouter()
 
 // Store 초기화
 // eslint-disable-next-line no-unused-vars
@@ -111,6 +121,9 @@ const workspaceStats = ref({})
 
 // Template Ref 추가
 const taskListRef = ref(null)
+
+// 모달 상태
+const showWorkspaceModal = ref(false)
 
 // TeamList에서 전달받는 이벤트 핸들러들
 // eslint-disable-next-line no-unused-vars
@@ -166,11 +179,22 @@ function handleCreateTask(taskData) {
 // eslint-disable-next-line no-unused-vars
 function handleTeamDetails() {
   console.log('팀 상세 정보 보기')
+  if(teamStore.selectedTeam){
+    router.push(`/teamtasks`)
+  }else{
+    alert('팀이 선택되지 않았습니다.')
+    return
+  }
 }
 
 // eslint-disable-next-line no-unused-vars
 function handleWorkspaceDetails() {
   console.log('작업공간 상세 정보 보기')
+  showWorkspaceModal.value = true
+}
+
+function handleCloseWorkspaceModal() {
+  showWorkspaceModal.value = false
 }
 </script>
 

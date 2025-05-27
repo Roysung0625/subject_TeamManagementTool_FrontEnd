@@ -2,48 +2,63 @@
   .modal-overlay(v-if="isVisible" @click="closeModal")
     .modal-content(@click.stop)
       .modal-header
-        h2 작업 상세내용
+        h2 팀 작업 상세내용
+        .team-info
+          span.team-name {{`팀 이름: ${teamName}`}}
       
       .modal-body
         .error(v-if="error") {{ error }}
         
-        input(
-          v-model="editableTask.title"
-          placeholder="Task Title"
-          :disabled="!isEditing"
-        )
+        .form-group
+          label 작업 제목
+          input(
+            v-model="editableTask.title"
+            placeholder="작업 제목을 입력하세요"
+            :disabled="!isEditing"
+          )
         
-        input(
-          type="datetime-local"
-          v-model="editableTask.due"
-          :disabled="!isEditing"
-        )
+        .form-group
+          label 마감일
+          input(
+            type="datetime-local"
+            v-model="editableTask.due"
+            :disabled="!isEditing"
+          )
         
-        select(v-model="editableTask.status" :disabled="!isEditing")
-          option(value="pending") 대기
-          option(value="in_progress") 진행중
-          option(value="completed") 완료
-          option(value="cancelled") 취소
+        .form-group
+          label 상태
+          select(v-model="editableTask.status" :disabled="!isEditing")
+            option(value="pending") 대기
+            option(value="in_progress") 진행중
+            option(value="completed") 완료
+            option(value="cancelled") 취소
         
-        input(
-          v-model="editableTask.category"
-          placeholder="Category (e.g., work, personal, urgent)"
-          :disabled="!isEditing"
-        )
+        .form-group
+          label 카테고리
+          input(
+            v-model="editableTask.category"
+            placeholder="카테고리 (예: 개발, 디자인, 기획)"
+            :disabled="!isEditing"
+          )
         
-        select(v-model="editableTask.employee_id" :disabled="!isEditing")
-          option(value="" disabled) 담당자를 선택하세요
-          option(
-            v-for="member in teamMembers"
-            :key="member.id"
-            :value="member.id"
-          ) {{ member.name }}
+        .form-group
+          label 담당자
+          select(v-model="editableTask.employee_id" :disabled="!isEditing")
+            option(value="" disabled) 담당자를 선택하세요
+            option(
+              v-for="member in teamMembers"
+              :key="member.id"
+              :value="member.id"
+            ) {{ member.name }} ({{ member.role || 'Employee' }})
         
-        textarea(
-          v-model="editableTask.detail"
-          placeholder="Task Details"
-          :disabled="!isEditing"
-        )
+        .form-group
+          label 작업 상세내용
+          textarea(
+            v-model="editableTask.detail"
+            placeholder="작업에 대한 상세한 설명을 입력하세요"
+            :disabled="!isEditing"
+            rows="4"
+          )
         
         .button-group
           button.btn.edit-btn(
@@ -55,7 +70,7 @@
             v-if="isEditing"
             @click="handleSave"
             :disabled="isSaving"
-          ) {{ isSaving ? 'Saving...' : 'Save Task' }}
+          ) {{ isSaving ? '저장 중...' : '저장' }}
           
           button.btn.cancel-btn(
             v-if="isEditing"
@@ -65,21 +80,18 @@
           button.btn.delete-btn(
             @click="handleDelete"
             :disabled="isDeleting"
-          ) {{ isDeleting ? 'Deleting...' : 'Delete Task' }}
+          ) {{ isDeleting ? '삭제 중...' : '삭제' }}
           
           button.btn.close-btn(
             @click="closeModal"
           ) 닫기
-
 </template>
+
 <script setup>
 /* eslint-disable */
 
 import { ref, watch, computed } from 'vue'
 import { taskService } from '@/services/taskService'
-import teamService from '@/services/teamService'
-import { useTeamStore } from '@/stores/team'
-import { useAuthStore } from '@/stores/auth'
 
 const props = defineProps({
   task: {
@@ -90,26 +102,22 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
-  currentUser: {
-    type: Object,
-    default: null
-  },
   teamMembers: {
     type: Array,
     default: () => []
+  },
+  teamName: {
+    type: String,
+    default: ''
   }
 })
 
-const teamStore = useTeamStore()
-const authStore = useAuthStore()
 const emit = defineEmits(['close', 'task-updated', 'task-deleted'])
 
 const error = ref(null)
 const isEditing = ref(false)
 const isSaving = ref(false)
-const isUpdating = ref(false)
 const isDeleting = ref(false)
-const selectedTeam = computed(() => teamStore.selectedTeam)
 
 const editableTask = ref({
   title: '',
@@ -124,7 +132,7 @@ const originalTask = ref({})
 
 // props.task가 변경될 때마다 editableTask 업데이트
 watch(() => props.task, (newTask) => {
-  console.log('TaskModal - task 변경:', newTask)
+  console.log('TeamTaskModal - task 변경:', newTask)
   if (newTask) {
     // due_at을 datetime-local 형식으로 변환
     const dueValue = newTask.due_at ? 
@@ -144,9 +152,10 @@ watch(() => props.task, (newTask) => {
 
 // isVisible 변경 감지
 watch(() => props.isVisible, (visible) => {
-  console.log('TaskModal - isVisible 변경:', visible)
+  console.log('TeamTaskModal - isVisible 변경:', visible)
   if (!visible) {
     isEditing.value = false
+    error.value = null
   }
 }, { immediate: true })
 
@@ -162,8 +171,18 @@ function cancelEdit() {
 }
 
 async function handleSave() {
-  if (!editableTask.value.title || !editableTask.value.due || !editableTask.value.employee_id) {
-    error.value = '모든 필수 필드를 입력해주세요.'
+  if (!editableTask.value.title.trim()) {
+    error.value = '작업 제목을 입력해주세요.'
+    return
+  }
+  
+  if (!editableTask.value.due) {
+    error.value = '마감일을 설정해주세요.'
+    return
+  }
+  
+  if (!editableTask.value.employee_id) {
+    error.value = '담당자를 선택해주세요.'
     return
   }
 
@@ -173,7 +192,10 @@ async function handleSave() {
   try {
     const formData = {
       ...editableTask.value,
-      due: new Date(editableTask.value.due).toISOString()
+      due_at: new Date(editableTask.value.due).toISOString(),
+      title: editableTask.value.title.trim(),
+      category: editableTask.value.category.trim(),
+      detail: editableTask.value.detail.trim()
     }
     
     const response = await taskService.updateTask(props.task.id, formData)
@@ -182,41 +204,17 @@ async function handleSave() {
     isEditing.value = false
     originalTask.value = { ...editableTask.value }
     
-    console.log('Task 업데이트 성공')
+    console.log('팀 태스크 업데이트 성공')
   } catch (apiError) {
+    console.error('팀 태스크 업데이트 실패:', apiError)
     error.value = apiError.message || '태스크 수정 중 오류가 발생했습니다.'
   } finally {
     isSaving.value = false
   }
 }
 
-async function handleComplete() {
-  isUpdating.value = true
-  error.value = null
-  
-  try {
-    const formData = {
-      ...editableTask.value,
-      status: 'completed',
-      due: editableTask.value.due ? new Date(editableTask.value.due).toISOString() : null
-    }
-    
-    const response = await taskService.updateTask(props.task.id, formData)
-    
-    emit('task-updated', response)
-    editableTask.value.status = 'completed'
-    originalTask.value.status = 'completed'
-    
-    console.log('Task 완료 처리 성공')
-  } catch (apiError) {
-    error.value = apiError.message || '태스크 완료 처리 중 오류가 발생했습니다.'
-  } finally {
-    isUpdating.value = false
-  }
-}
-
 async function handleDelete() {
-  if (!confirm('정말로 이 작업을 삭제하시겠습니까?')) {
+  if (!confirm('정말로 이 작업을 삭제하시겠습니까?\n삭제된 작업은 복구할 수 없습니다.')) {
     return
   }
   
@@ -229,8 +227,9 @@ async function handleDelete() {
     emit('task-deleted', props.task.id)
     closeModal()
     
-    console.log('Task 삭제 성공')
+    console.log('팀 태스크 삭제 성공')
   } catch (apiError) {
+    console.error('팀 태스크 삭제 실패:', apiError)
     error.value = apiError.message || '태스크 삭제 중 오류가 발생했습니다.'
   } finally {
     isDeleting.value = false
@@ -238,11 +237,12 @@ async function handleDelete() {
 }
 
 function closeModal() {
-  console.log('TaskModal closeModal 호출')
+  console.log('TeamTaskModal closeModal 호출')
   if (isEditing.value) {
     if (confirm('편집 중인 내용이 있습니다. 정말로 닫으시겠습니까?')) {
       isEditing.value = false
       editableTask.value = { ...originalTask.value }
+      error.value = null
       emit('close')
     }
   } else {
@@ -269,6 +269,11 @@ function formatDate(dateString) {
     return '잘못된 날짜'
   }
 }
+
+function getAssigneeName(employeeId) {
+  const member = props.teamMembers.find(m => m.id === employeeId)
+  return member ? `${member.name} (${member.role || '직원'})` : '미지정'
+}
 </script>
 
 <style scoped>
@@ -278,7 +283,7 @@ function formatDate(dateString) {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -287,123 +292,158 @@ function formatDate(dateString) {
 
 .modal-content {
   background-color: white;
-  width: 500px;
-  max-width: 90vw;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 600px;
+  max-width: 95vw;
+  max-height: 90vh;
+  border: 2px solid #000;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  overflow-y: auto;
 }
 
 .modal-header {
-  background-color: #f3f4f6;
-  padding: 16px;
-  text-align: center;
-  border-radius: 8px 8px 0 0;
+  background-color: #f0f0f0;
+  padding: 16px 20px;
+  border-bottom: 2px solid #000;
 }
 
 .modal-header h2 {
-  margin: 0;
+  margin: 0 0 8px 0;
   font-size: 20px;
+  font-weight: bold;
+}
+
+.team-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.team-name {
+  background-color: #e0e0e0;
+  padding: 4px 8px;
+  border: 1px solid #000;
+  font-size: 12px;
+  font-weight: bold;
 }
 
 .modal-body {
   padding: 20px;
 }
 
-/* CreateTaskForm과 동일한 스타일 */
-.modal-body input, 
-.modal-body textarea,
-.modal-body select { 
-  width: 100%; 
-  margin-bottom: 8px; 
-  padding: 8px; 
-  box-sizing: border-box; 
-  border: 1px solid #ddd; 
-  border-radius: 4px;
+.form-group {
+  margin-bottom: 16px;
 }
 
-.modal-body textarea { 
+.form-group label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.form-group input, 
+.form-group textarea,
+.form-group select { 
+  width: 100%; 
+  padding: 8px; 
+  box-sizing: border-box; 
+  border: 1px solid #000; 
+  font-size: 14px;
+}
+
+.form-group textarea { 
   resize: vertical; 
   min-height: 80px; 
+  font-family: inherit;
+}
+
+.form-group input:disabled,
+.form-group textarea:disabled,
+.form-group select:disabled {
+  background-color: #f5f5f5;
+  color: #666;
 }
 
 .error {
   background-color: #fee;
   color: #c33;
   padding: 8px;
-  border-radius: 4px;
-  margin-bottom: 8px;
+  margin-bottom: 16px;
   border: 1px solid #fcc;
+  font-size: 14px;
 }
 
 .button-group {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 16px;
+  margin-top: 20px;
 }
 
 .btn { 
-  background: #3b82f6; 
-  color: #fff; 
-  border: none; 
+  background: #e0e0e0; 
+  color: #000; 
+  border: 1px solid #000; 
   padding: 8px 16px; 
   cursor: pointer; 
-  border-radius: 4px;
+  font-size: 14px;
   transition: background-color 0.2s;
   flex: 1;
   min-width: 100px;
 }
 
 .btn:hover:not(:disabled) {
-  background: #2563eb;
+  background: #d0d0d0;
 }
 
 .btn:disabled {
-  background: #9ca3af;
+  background: #f0f0f0;
   cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .edit-btn {
-  background: #10b981;
+  background: #d4edda;
+  color: #155724;
 }
 
 .edit-btn:hover:not(:disabled) {
-  background: #059669;
+  background: #c3e6cb;
 }
 
 .save-btn {
-  background: #3b82f6;
+  background: #cce5ff;
+  color: #004085;
+}
+
+.save-btn:hover:not(:disabled) {
+  background: #b3d9ff;
 }
 
 .cancel-btn {
-  background: #6b7280;
+  background: #f8d7da;
+  color: #721c24;
 }
 
 .cancel-btn:hover:not(:disabled) {
-  background: #4b5563;
-}
-
-.complete-btn {
-  background: #10b981;
-}
-
-.complete-btn:hover:not(:disabled) {
-  background: #059669;
+  background: #f1b0b7;
 }
 
 .delete-btn {
-  background: #ef4444;
+  background: #f8d7da;
+  color: #721c24;
 }
 
 .delete-btn:hover:not(:disabled) {
-  background: #dc2626;
+  background: #f1b0b7;
 }
 
 .close-btn {
-  background: #6b7280;
+  background: #e2e3e5;
+  color: #383d41;
 }
 
 .close-btn:hover:not(:disabled) {
-  background: #4b5563;
+  background: #d6d8db;
 }
-</style>
+</style> 
