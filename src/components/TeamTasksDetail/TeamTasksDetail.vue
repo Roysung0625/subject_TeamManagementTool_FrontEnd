@@ -3,9 +3,9 @@
       .header-section
         .filter-section
           .filter-group
-            label 업무자 필터
+            label 担当者フィルター
             select(v-model="selectedEmployee" :disabled="disableFilter" @change="applyEmployeeFilter")
-              option(value="") 전체 업무자
+              option(value="") 全担当者
               option(
                 v-for="member in teamMembers"
                 :key="member.id"
@@ -13,45 +13,45 @@
               ) {{ member.name }}
           
           .filter-group
-            label 카테고리 검색
+            label カテゴリ検索
             .search-container
               input(
                 v-model="selectedCategory"
                 :disabled="disableFilter"
                 type="text"
-                placeholder="카테고리 검색"
+                placeholder="カテゴリ検索"
               )
-              button.search-btn(@click="applyCategorySearch" :disabled="disableFilter") 검색
+              button.search-btn(@click="applyCategorySearch" :disabled="disableFilter") 検索
           .filter-group
             
           
           .filter-group
-            label 상태 필터
+            label ステータスフィルター
             select(v-model="selectedStatus" :disabled="disableFilter" @change="applyStatusFilter")
-              option(value="") 전체 상태
-              option(value="pending") 대기
-              option(value="in_progress") 진행중
-              option(value="done") 완료
+              option(value="") 全ステータス
+              option(value="pending") 待機
+              option(value="in_progress") 進行中
+              option(value="done") 完了
           
           .filter-actions
-            button.reset-btn(@click="resetFilters") 필터 초기화
+            button.reset-btn(@click="resetFilters") フィルター初期化
 
         .team-info-section
-          h2.team-name {{ `팀 이름: ${selectedTeam?.name}` || '팀이 선택되지 않음' }}
+          h2.team-name {{ `チーム名: ${selectedTeam?.name}` || 'チームが選択されていません' }}
         .close-section
-          button.close-btn(@click="goToDashboard") 대시보드로 돌아가기
+          button.close-btn(@click="goToDashboard") ダッシュボードに戻る
       
       .content-section
         .table-container
           table.details-table
             thead
               tr
-                th 상태
-                th 카테고리
-                th 제목
-                th 상세내용
-                th 마감일
-                th 담당자
+                th ステータス
+                th カテゴリ
+                th タイトル
+                th 詳細内容
+                th 期限
+                th 担当者
             tbody
               TeamTaskItem(
                 v-for="task in teamTasks"
@@ -61,15 +61,15 @@
                 @click="openTaskModal"
               )
               
-              // 페이지 이동 버튼 행
+              // ページ移動ボタン行
               tr.pagination-row
                 td(colspan="6")
                   .pagination-controls
-                    button.page-btn(:disabled="currentPage <= 1" @click="previousPage") ◀ 이전
+                    button.page-btn(:disabled="currentPage <= 1" @click="previousPage") ◀ 前へ
                     span.page-info {{ currentPage }} / {{ totalPages }}
-                    button.page-btn(:disabled="currentPage >= totalPages" @click="nextPage") 다음 ▶
+                    button.page-btn(:disabled="currentPage >= totalPages" @click="nextPage") 次へ ▶
 
-    // TaskModal 추가
+    // TaskModal 追加
     TeamTaskModal(
       :task="selectedTask"
       :is-visible="isModalVisible"
@@ -107,18 +107,18 @@ const loading = ref(false)
 const currentPage = ref(1)
 const itemsPerPage = ref(30)
 
-// 필터 관련
+// フィルター関連
 const selectedEmployee = ref('')
 const selectedCategory = ref('')
 const selectedStatus = ref('')
 const categorySearched = ref(false)
 
-// TaskModal 관련
+// TaskModal関連
 const selectedTask = ref(null)
 const isModalVisible = ref(false)
 
 
-// 페이지네이션 (필터링된 결과 기준)
+// ページネーション（フィルタリングされた結果基準）
 const totalPages = computed(() => {
     return Math.ceil(teamTasks.value.length / itemsPerPage.value)
 })
@@ -143,16 +143,16 @@ async function fetchTeamDetails() {
     loading.value = true
 
     try {
-        // 팀 태스크 목록 가져오기
+        // チームタスクリスト取得
         const tasks = await taskService.getTeamTasks(selectedTeam.value.id, option)
         teamTasks.value = Array.isArray(tasks) ? tasks : []
 
-        // 팀 멤버 목록 가져오기
+        // チームメンバーリスト取得
         const members = await teamService.getTeamMembers(selectedTeam.value.id)
         teamMembers.value = Array.isArray(members) ? members : []
 
     } catch (error) {
-        console.error('팀 상세 정보 로드 실패:', error)
+        console.error('チーム詳細情報読み込み失敗:', error)
         teamTasks.value = []
         teamMembers.value = []
     } finally {
@@ -170,7 +170,7 @@ async function applyEmployeeFilter() {
         console.log("tasks", tasks)
         teamTasks.value = Array.isArray(tasks) ? tasks : []
     } catch (error) {
-        console.error('팀 상세 정보 로드 실패:', error)
+        console.error('チーム詳細情報読み込み失敗:', error)
         teamTasks.value = []
     } finally {
         loading.value = false
@@ -187,7 +187,7 @@ async function applyStatusFilter() {
         console.log("tasks", tasks)
         teamTasks.value = Array.isArray(tasks) ? tasks : []
     } catch (error) {
-        console.error('팀 상세 정보 로드 실패:', error)
+        console.error('チーム詳細情報読み込み失敗:', error)
         teamTasks.value = []
     } finally {
         loading.value = false
@@ -204,7 +204,7 @@ async function applyCategorySearch() {
         console.log("tasks", tasks)
         teamTasks.value = Array.isArray(tasks) ? tasks : []
     } catch (error) {
-        console.error('팀 상세 정보 로드 실패:', error)
+        console.error('チーム詳細情報読み込み失敗:', error)
         teamTasks.value = []
     } finally {
         loading.value = false
@@ -236,7 +236,7 @@ function nextPage() {
     }
 }
 
-// TaskModal 관련 함수들
+// TaskModal関連関数
 function openTaskModal(task) {
     selectedTask.value = task
     isModalVisible.value = true
@@ -255,7 +255,7 @@ function handleTaskUpdated(updatedTask) {
 }
 
 function handleTaskDeleted(taskId) {
-    //삭제된 것 빼고 다시 불러오기
+    // 削除されたものを除いて再読み込み
     teamTasks.value = teamTasks.value.filter(task => task.id !== taskId)
 }
 
@@ -263,9 +263,9 @@ onMounted(() => {
     fetchTeamDetails()
 })
 
-// teamTasks 변경 감지
+// teamTasks変更検知
 watch(teamTasks, (newTasks) => {
-    console.log("teamTasks 변경됨:", newTasks.length, "개 항목")
+    console.log("teamTasks変更:", newTasks.length, "個の項目")
 }, { deep: true })
 
 </script>
@@ -436,12 +436,12 @@ watch(teamTasks, (newTasks) => {
     white-space: nowrap;
 }
 
-/* 테이블 행 호버 효과 */
+/* テーブル行ホバー効果 */
 .details-table tbody tr:hover {
     background-color: #f8f9fa;
 }
 
-/* 빈 행 스타일 */
+/* 空行スタイル */
 .details-table tbody tr:has(td:first-child:empty) {
     height: 35px;
 }

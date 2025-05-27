@@ -2,7 +2,7 @@
   .modal-overlay(v-if="isVisible" @click="closeModal")
     .modal-content(@click.stop)
       .modal-header
-        h2 작업 상세내용
+        h2 作業詳細内容
       
       .modal-body
         .error(v-if="error") {{ error }}
@@ -20,10 +20,10 @@
         )
         
         select(v-model="editableTask.status" :disabled="!isEditing")
-          option(value="pending") 대기
-          option(value="in_progress") 진행중
-          option(value="completed") 완료
-          option(value="cancelled") 취소
+          option(value="pending") 待機
+          option(value="in_progress") 進行中
+          option(value="completed") 完了
+          option(value="cancelled") 取消
         
         input(
           v-model="editableTask.category"
@@ -32,7 +32,7 @@
         )
         
         select(v-model="editableTask.employee_id" :disabled="!isEditing")
-          option(value="" disabled) 담당자를 선택하세요
+          option(value="" disabled) 担当者を選択してください
           option(
             v-for="member in teamMembers"
             :key="member.id"
@@ -49,7 +49,7 @@
           button.btn.edit-btn(
             v-if="!isEditing"
             @click="toggleEdit"
-          ) 작업 수정
+          ) 作業修正
           
           button.btn.save-btn(
             v-if="isEditing"
@@ -60,7 +60,7 @@
           button.btn.cancel-btn(
             v-if="isEditing"
             @click="cancelEdit"
-          ) 취소
+          ) キャンセル
           
           button.btn.delete-btn(
             @click="handleDelete"
@@ -69,7 +69,7 @@
           
           button.btn.close-btn(
             @click="closeModal"
-          ) 닫기
+          ) 閉じる
 
 </template>
 <script setup>
@@ -122,11 +122,11 @@ const editableTask = ref({
 
 const originalTask = ref({})
 
-// props.task가 변경될 때마다 editableTask 업데이트
+// props.taskが変更されるたびにeditableTask更新
 watch(() => props.task, (newTask) => {
-  console.log('TaskModal - task 변경:', newTask)
+  console.log('TaskModal - task変更:', newTask)
   if (newTask) {
-    // due_at을 datetime-local 형식으로 변환
+    // due_atをdatetime-local形式に変換
     const dueValue = newTask.due_at ? 
       new Date(newTask.due_at).toISOString().slice(0, 16) : ''
     
@@ -142,9 +142,9 @@ watch(() => props.task, (newTask) => {
   }
 }, { immediate: true })
 
-// isVisible 변경 감지
+// isVisible変更検知
 watch(() => props.isVisible, (visible) => {
-  console.log('TaskModal - isVisible 변경:', visible)
+  console.log('TaskModal - isVisible変更:', visible)
   if (!visible) {
     isEditing.value = false
   }
@@ -163,7 +163,7 @@ function cancelEdit() {
 
 async function handleSave() {
   if (!editableTask.value.title || !editableTask.value.due || !editableTask.value.employee_id) {
-    error.value = '모든 필수 필드를 입력해주세요.'
+    error.value = 'すべての必須フィールドを入力してください。'
     return
   }
 
@@ -182,9 +182,9 @@ async function handleSave() {
     isEditing.value = false
     originalTask.value = { ...editableTask.value }
     
-    console.log('Task 업데이트 성공')
+    console.log('Task更新成功')
   } catch (apiError) {
-    error.value = apiError.message || '태스크 수정 중 오류가 발생했습니다.'
+    error.value = apiError.message || 'タスク修正中にエラーが発生しました。'
   } finally {
     isSaving.value = false
   }
@@ -198,25 +198,23 @@ async function handleComplete() {
     const formData = {
       ...editableTask.value,
       status: 'completed',
-      due: editableTask.value.due ? new Date(editableTask.value.due).toISOString() : null
+      due: new Date(editableTask.value.due).toISOString()
     }
     
     const response = await taskService.updateTask(props.task.id, formData)
     
     emit('task-updated', response)
-    editableTask.value.status = 'completed'
-    originalTask.value.status = 'completed'
     
-    console.log('Task 완료 처리 성공')
+    console.log('Task完了処理成功')
   } catch (apiError) {
-    error.value = apiError.message || '태스크 완료 처리 중 오류가 발생했습니다.'
+    error.value = apiError.message || 'タスク完了処理中にエラーが発生しました。'
   } finally {
     isUpdating.value = false
   }
 }
 
 async function handleDelete() {
-  if (!confirm('정말로 이 작업을 삭제하시겠습니까?')) {
+  if (!confirm('この作業を削除してもよろしいですか？')) {
     return
   }
   
@@ -229,18 +227,18 @@ async function handleDelete() {
     emit('task-deleted', props.task.id)
     closeModal()
     
-    console.log('Task 삭제 성공')
+    console.log('Task削除成功')
   } catch (apiError) {
-    error.value = apiError.message || '태스크 삭제 중 오류가 발생했습니다.'
+    error.value = apiError.message || 'タスク削除中にエラーが発生しました。'
   } finally {
     isDeleting.value = false
   }
 }
 
 function closeModal() {
-  console.log('TaskModal closeModal 호출')
+  console.log('TaskModal closeModal呼び出し')
   if (isEditing.value) {
-    if (confirm('편집 중인 내용이 있습니다. 정말로 닫으시겠습니까?')) {
+    if (confirm('編集中の内容があります。本当に閉じますか？')) {
       isEditing.value = false
       editableTask.value = { ...originalTask.value }
       emit('close')
@@ -251,11 +249,11 @@ function closeModal() {
 }
 
 function formatDate(dateString) {
-  if (!dateString) return '설정되지 않음'
+  if (!dateString) return '設定されていません'
   
   try {
     const date = new Date(dateString)
-    if (isNaN(date.getTime())) return '잘못된 날짜'
+    if (isNaN(date.getTime())) return '不正な日付'
     
     return date.toLocaleDateString('ko-KR', {
       year: 'numeric',
@@ -266,7 +264,7 @@ function formatDate(dateString) {
       hour12: false
     })
   } catch (error) {
-    return '잘못된 날짜'
+    return '不正な日付'
   }
 }
 </script>
@@ -309,7 +307,7 @@ function formatDate(dateString) {
   padding: 20px;
 }
 
-/* CreateTaskForm과 동일한 스타일 */
+/* CreateTaskFormと同じスタイル */
 .modal-body input, 
 .modal-body textarea,
 .modal-body select { 

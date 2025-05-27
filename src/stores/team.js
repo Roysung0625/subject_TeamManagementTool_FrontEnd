@@ -1,70 +1,90 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import teamService from '@/services/teamService'
 
 /**
- * 팀 관련 상태 관리 스토어
- * Composition API 스타일로 구현
+ * チーム関連状態管理ストア
+ * Composition APIスタイルで実装
  */
 export const useTeamStore = defineStore('team', () => {
-  // 상태
+  // 状態
   const teams = ref([])
   const selectedTeam = ref(null)
   const loading = ref(false)
   const error = ref(null)
 
-  // 계산된 속성
+  // 計算されたプロパティ
   const getTeams = computed(() => teams.value)
   const isLoading = computed(() => loading.value)
   const teamCount = computed(() => teams.value.length)
   const getSelectedTeam = computed(() => selectedTeam.value)
 
-  // 액션
+  // アクション
   /**
-   * 선택된 팀 설정
-   * @param {Object} team - 선택할 팀
+   * 全体チームリスト照会
+   */
+  async function fetchTeams() {
+    loading.value = true
+    error.value = null
+    
+    try {
+      const response = await teamService.getTeams()
+      teams.value = response
+    } catch (err) {
+      error.value = err.message || 'チームリスト取得中にエラーが発生しました。'
+      console.error('チームリスト取得失敗:', err)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * 選択されたチーム設定
+   * @param {Object} team - 選択するチーム
    */
   function setSelectedTeam(team) {
     selectedTeam.value = team
   }
 
   /**
-   * 로딩 상태 설정
-   * @param {boolean} isLoading - 로딩 상태
+   * ローディング状態設定
+   * @param {boolean} isLoading - ローディング状態
    */
   function setLoading(isLoading) {
     loading.value = isLoading
   }
 
   /**
-   * 에러 설정
-   * @param {string} errorMessage - 에러 메시지
+   * エラー設定
+   * @param {string} errorMessage - エラーメッセージ
    */
   function setError(errorMessage) {
     error.value = errorMessage
   }
 
   /**
-   * 에러 초기화
+   * エラー初期化
    */
   function clearError() {
     error.value = null
   }
 
-  // 스토어 반환
+  // ストア返却
   return {
-    // 상태
+    // 状態
     teams,
     selectedTeam,
     loading,
     error,
     
-    // 계산된 속성
+    // 計算されたプロパティ
     getTeams,
     getSelectedTeam,
     isLoading,
     teamCount,
     
-    // 액션
+    // アクション
+    fetchTeams,
     setSelectedTeam,
     setLoading,
     setError,

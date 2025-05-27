@@ -26,42 +26,42 @@ import teamService from '@/services/teamService'
 import { useAuthStore } from '@/stores/auth'
 import { useTeamStore } from '@/stores/team'
 
-// Props (외부에서 받을 데이터가 있다면)
+// Props（外部から受け取るデータがある場合）
 const props = defineProps({
-  // 선택된 팀 정보를 부모에게 전달하기 위한 prop (선택사항)
+  // 選択されたチーム情報を親に渡すためのprop（オプション）
 })
 
-// Emits (부모 컴포넌트에 이벤트 전달)
+// Emits（親コンポーネントにイベント送信）
 const emit = defineEmits(['team-selected', 'teams-updated'])
 
-// 스토어 사용
+// ストア使用
 const authStore = useAuthStore()
 const teamStore = useTeamStore()
 
-// 팀 관련 상태 관리
+// チーム関連状態管理
 const teams = ref([])
 const selectedTeam = ref(null)
 const isLoading = ref(false)
 const error = ref(null)
 const currentEmployeeId = authStore.userId
 
-// API에서 팀 목록을 가져오는 함수
+// APIからチームリストを取得する関数
 async function fetchTeamList() {
   isLoading.value = true
   error.value = null
   
   try {
-    //현재 로그인한 사용자의 Id
+    // 現在ログインしたユーザーのId
     const response = await teamService.getEmployeeTeams(currentEmployeeId)
     teams.value = response
     
   } catch (err) {
-    error.value = err.message || '팀 목록을 가져오는 중 오류가 발생했습니다.'
-    console.error('팀 목록을 가져오는 중 오류 발생:', err)
+    error.value = err.message || 'チームリスト取得中にエラーが発生しました。'
+    console.error('チームリスト取得中にエラー発生:', err)
     
-    // 인증 오류인 경우
+    // 認証エラーの場合
     if (err.status === 401) {
-      console.warn('인증이 필요합니다.')
+      console.warn('認証が必要です。')
       authStore.clearAuthData()
     }
   } finally {
@@ -69,11 +69,11 @@ async function fetchTeamList() {
   }
 }
 
-// 팀 추가
+// チーム追加
 async function handleAddTeam() {
   try {
-    // 예시: 간단한 prompt로 팀 이름 입력받기 (실제로는 모달 사용)
-    const teamName = prompt('새 팀 이름을 입력하세요:')
+    // 例：簡単なpromptでチーム名入力受け取り（実際にはモーダル使用）
+    const teamName = prompt('新しいチーム名を入力してください:')
     if (!teamName) return
     
     isLoading.value = true
@@ -85,31 +85,31 @@ async function handleAddTeam() {
     teams.value.push(newTeam)
     
   } catch (err) {
-    error.value = err.message || '팀 추가 중 오류가 발생했습니다.'
-    console.error('팀 추가 실패:', err)
+    error.value = err.message || 'チーム追加中にエラーが発生しました。'
+    console.error('チーム追加失敗:', err)
   } finally {
     isLoading.value = false
   }
 }
 
-// 팀 수정
+// チーム修正
 async function handleEditTeam(team) {
   try {
     isLoading.value = true
     
-    const newName = prompt('팀 이름을 수정하세요:', team.name)
+    const newName = prompt('チーム名を修正してください:', team.name)
     if (!newName || newName === team.name) return
     
     const updatedData = { ...team, name: newName }
     const updatedTeam = await teamService.updateTeam(team.id, updatedData)
     
-    // 로컬 상태 업데이트
+    // ローカル状態更新
     const index = teams.value.findIndex(t => t.id === team.id)
     if (index !== -1) {
       teams.value[index] = updatedTeam
     }
     
-    // 선택된 팀도 업데이트
+    // 選択されたチームも更新
     if (selectedTeam.value?.id === team.id) {
       selectedTeam.value = updatedTeam
       emit('team-selected', updatedTeam)
@@ -118,25 +118,25 @@ async function handleEditTeam(team) {
     emit('teams-updated', teams.value)
     
   } catch (err) {
-    error.value = err.message || '팀 수정 중 오류가 발생했습니다.'
-    console.error('팀 수정 실패:', err)
+    error.value = err.message || 'チーム修正中にエラーが発生しました。'
+    console.error('チーム修正失敗:', err)
   } finally {
     isLoading.value = false
   }
 }
 
-// 팀 삭제
+// チーム削除
 async function handleDeleteTeam(team) {
   try {
-    if (!confirm(`'${team.name}' 팀을 정말 삭제하시겠습니까?`)) return
+    if (!confirm(`'${team.name}' チームを本当に削除しますか？`)) return
     
     isLoading.value = true
     await teamService.deleteTeam(team.id)
     
-    // 로컬 상태에서 제거
+    // ローカル状態から削除
     teams.value = teams.value.filter(t => t.id !== team.id)
     
-    // 선택된 팀이 삭제된 팀이라면 선택 해제
+    // 選択されたチームが削除されたチームなら選択解除
     if (selectedTeam.value?.id === team.id) {
       selectedTeam.value = null
       emit('team-selected', null)
@@ -145,21 +145,27 @@ async function handleDeleteTeam(team) {
     emit('teams-updated', teams.value)
     
   } catch (err) {
-    error.value = err.message || '팀 삭제 중 오류가 발생했습니다.'
-    console.error('팀 삭제 실패:', err)
+    error.value = err.message || 'チーム削除中にエラーが発生しました。'
+    console.error('チーム削除失敗:', err)
   } finally {
     isLoading.value = false
   }
 }
 
-// 팀 선택
+// チーム選択
 function handleSelectTeam(team) {
-  teamStore.selectedTeam = team
+  selectedTeam.value = team
+  emit('team-selected', team)
 }
 
-// 컴포넌트 마운트 시 팀 목록 로드
+// コンポーネントマウント時チームリスト読み込み
 onMounted(() => {
   fetchTeamList()
+})
+
+// 外部で使用できるように関数expose
+defineExpose({
+  fetchTeamList
 })
 
 </script>

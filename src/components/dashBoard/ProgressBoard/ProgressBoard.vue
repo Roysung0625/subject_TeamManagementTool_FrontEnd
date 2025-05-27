@@ -4,7 +4,7 @@
     span {{ currentTeamName }}
     .loading-indicator(v-if="isLoading") Loading...
   .panel-body(v-if="!isLoading && !error")
-    .no-team(v-if="!currentTeamId") 팀을 선택해주세요
+    .no-team(v-if="!currentTeamId") チームを選択してください
     table(v-else-if="teamMembers && teamMembers.length > 0")
       thead
         tr
@@ -16,7 +16,7 @@
           :key="member.id"
           :member="member"
         )
-    .no-members(v-else) 멤버가 없습니다
+    .no-members(v-else) メンバーがいません
   .error(v-if="error") {{ error }}
 </template>
 
@@ -28,7 +28,7 @@ import MemberRow from './MemberRow.vue'
 import { useTeamStore } from '@/stores/team'
 import teamService from '@/services/teamService'
 
-// props 정의 (먼저 정의)
+// props定義（最初に定義）
 const props = defineProps({
   members: {
     type: Array,
@@ -46,12 +46,12 @@ const props = defineProps({
 
 const teamStore = useTeamStore()
 
-// 반응형 상태 (명시적 초기화)
+// レスポンシブ状態（明示的初期化）
 const teamMembers = ref([])
 const error = ref(null)
 const isLoading = ref(false)
 
-// 계산된 속성 (반응성 유지)
+// 計算されたプロパティ（反応性維持）
 const currentSelectedTeam = computed(() => teamStore.selectedTeam)
 const currentTeamName = computed(() => {
   if (currentSelectedTeam.value?.name) {
@@ -63,26 +63,26 @@ const currentTeamId = computed(() => {
   return currentSelectedTeam.value?.id || null
 })
 
-// API에서 멤버 목록을 가져오는 함수
+// APIからメンバーリストを取得する関数
 async function fetchMemberList() {
   const teamId = currentTeamId.value
   
-  console.log('fetchMemberList 호출됨, teamId:', teamId, 'type:', typeof teamId)
+  console.log('fetchMemberList呼び出し, teamId:', teamId, 'type:', typeof teamId)
   
-  // 더 엄격한 teamId 검증
+  // より厳格なteamId検証
   if (!teamId || teamId === null || teamId === undefined || teamId === 'null' || teamId === 'undefined') {
-    console.log('유효하지 않은 팀 ID로 인해 멤버 목록 초기화')
+    console.log('無効なチームIDによりメンバーリスト初期化')
     teamMembers.value = []
     error.value = null
     return
   }
 
-  // 숫자가 아닌 경우 처리
+  // 数字でない場合の処理
   const numericTeamId = Number(teamId)
   if (isNaN(numericTeamId) || numericTeamId <= 0) {
-    console.log('숫자가 아닌 팀 ID:', teamId)
+    console.log('数字でないチームID:', teamId)
     teamMembers.value = []
-    error.value = '유효하지 않은 팀 ID입니다.'
+    error.value = '無効なチームIDです。'
     return
   }
 
@@ -90,14 +90,14 @@ async function fetchMemberList() {
   error.value = null
   
   try {
-    console.log('팀 멤버 목록 로드 중:', numericTeamId)
+    console.log('チームメンバーリスト読み込み中:', numericTeamId)
     const response = await teamService.getTeamMembers(numericTeamId)
     teamMembers.value = Array.isArray(response) ? response : []
-    console.log('팀 멤버 목록 로드 완료:', teamMembers.value)
+    console.log('チームメンバーリスト読み込み完了:', teamMembers.value)
     
   } catch (err) {
-    console.error('멤버 목록을 가져오는 중 오류 발생:', err)
-    error.value = err.message || '멤버 목록을 가져오는 중 오류가 발생했습니다.'
+    console.error('メンバーリスト取得中にエラー発生:', err)
+    error.value = err.message || 'メンバーリスト取得中にエラーが発生しました。'
     teamMembers.value = []
   } finally {
     isLoading.value = false
@@ -112,32 +112,32 @@ function showMembers(){
   return false
 }
 
-// 선택된 팀이 변경될 때마다 멤버 목록 다시 로드
+// 選択されたチームが変更されるたびにメンバーリスト再読み込み
 watch(currentTeamId, (newTeamId, oldTeamId) => {
-  console.log('팀 변경 감지:', { newTeamId, oldTeamId, newType: typeof newTeamId, oldType: typeof oldTeamId })
+  console.log('チーム変更検知:', { newTeamId, oldTeamId, newType: typeof newTeamId, oldType: typeof oldTeamId })
   
   if (newTeamId && newTeamId !== oldTeamId) {
     fetchMemberList()
   } else if (!newTeamId) {
-    console.log('팀 선택 해제됨')
+    console.log('チーム選択解除')
     teamMembers.value = []
     error.value = null
   }
 })
 
 onMounted(() => {
-  console.log('ProgressBoard 마운트됨')
-  console.log('현재 팀 ID:', currentTeamId.value)
-  console.log('현재 선택된 팀:', currentSelectedTeam.value)
-  console.log('teamStore 상태:', teamStore)
+  console.log('ProgressBoardマウント')
+  console.log('現在のチームID:', currentTeamId.value)
+  console.log('現在選択されたチーム:', currentSelectedTeam.value)
+  console.log('teamStore状態:', teamStore)
   
-  // 이미 팀이 선택되어 있다면 멤버 목록 로드
+  // すでにチームが選択されている場合はメンバーリスト読み込み
   if (currentTeamId.value) {
     fetchMemberList()
   }
 })
 
-// 외부에서 사용할 수 있도록 함수와 상태 expose
+// 外部で使用できるように関数と状態expose
 defineExpose({
   fetchMemberList
 })

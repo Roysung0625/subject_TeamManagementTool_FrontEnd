@@ -1,15 +1,15 @@
 <template lang="pug">
 .login-form
   .form-container
-    h2 로그인
+    h2 ログイン
     
-    //.prevent => action 수행 후, 새로고침을 막는다
+    //.prevent => action実行後、リフレッシュを防ぐ
     form(@submit.prevent="handleLogin")
       FormInput(
         id="employee_id"
         v-model="credentials.employee_id"
-        label="사번"
-        placeholder="사번을 입력하세요"
+        label="社員番号"
+        placeholder="社員番号を入力してください"
         :required="true"
         :disabled="authStore.isLoading"
       )
@@ -18,8 +18,8 @@
         id="password"
         v-model="credentials.password"
         type="password"
-        label="비밀번호"
-        placeholder="비밀번호를 입력하세요"
+        label="パスワード"
+        placeholder="パスワードを入力してください"
         :required="true"
         :disabled="authStore.isLoading"
       )
@@ -38,7 +38,7 @@
           :disabled="!isFormValid"
           :loading="authStore.isLoading"
           full-width
-        ) 로그인
+        ) ログイン
         
         BaseButton(
           type="button"
@@ -46,12 +46,12 @@
           :disabled="authStore.isLoading"
           full-width
           @click="goToRegister"
-        ) 회원가입
+        ) 会員登録
     
     UserInfo(
       v-if="authStore.isAuthenticated"
       :user="authStore.user"
-      title="로그인 정보"
+      title="ログイン情報"
       @logout="handleLogout"
     )
 </template>
@@ -70,22 +70,22 @@ import ErrorMessage from '@/components/common/ErrorMessage.vue'
 // eslint-disable-next-line no-unused-vars
 import UserInfo from '@/components/auth/UserInfo.vue'
 
-// 라우터와 스토어 사용
+// ルーターとストア使用
 const router = useRouter()
 const authStore = useAuthStore()
 
-// 로그인 폼 데이터
+// ログインフォームデータ
 const credentials = ref({
   employee_id: '',
   password: ''
 })
 
-// 폼 유효성 검사
+// フォームバリデーション
 const isFormValid = computed(() => {
   return credentials.value.employee_id && credentials.value.password
 })
 
-// 로그인 처리
+// ログイン処理
 // eslint-disable-next-line no-unused-vars
 async function handleLogin() {
   if (!isFormValid.value) return
@@ -94,52 +94,52 @@ async function handleLogin() {
     authStore.setLoading(true)
     authStore.clearError()
     
-    // authService를 직접 호출
+    // authServiceを直接呼び出し
     const response = await authService.login(credentials.value)
     
-    // 로그인 성공 시 authStore에 데이터 저장
+    // ログイン成功時authStoreにデータ保存
     authStore.setAuthData(response)
     
-    console.log('로그인 성공:', authStore.user)
+    console.log('ログイン成功:', authStore.user)
     await router.push('/dashboard')
     
   } catch (error) {
-    console.error('로그인 실패:', error)
-    authStore.setError(error.message || '로그인에 실패했습니다.')
+    console.error('ログイン失敗:', error)
+    authStore.setError(error.message || 'ログインに失敗しました。')
   } finally {
     authStore.setLoading(false)
   }
 }
 
-// 회원가입 페이지로 이동
+// 会員登録ページに移動
 // eslint-disable-next-line no-unused-vars
 function goToRegister() {
   router.push('/register')
 }
 
-// 로그아웃 처리
+// ログアウト処理
 // eslint-disable-next-line no-unused-vars
 async function handleLogout() {
   try {
     authStore.setLoading(true)
     
-    // authService를 직접 호출
+    // authServiceを直接呼び出し
     await authService.logout()
     
-    // authStore 상태 초기화
+    // authStore状態初期化
     authStore.clearAuthData()
     
-    console.log('로그아웃 완료')
+    console.log('ログアウト完了')
     
-    // 폼 초기화
+    // フォーム初期化
     credentials.value = {
       email: '',
       password: ''
     }
     
   } catch (error) {
-    console.error('로그아웃 실패:', error)
-    // 로그아웃은 실패해도 로컬 상태는 정리
+    console.error('ログアウト失敗:', error)
+    // ログアウトは失敗してもローカル状態は整理
     authStore.clearAuthData()
   } finally {
     authStore.setLoading(false)

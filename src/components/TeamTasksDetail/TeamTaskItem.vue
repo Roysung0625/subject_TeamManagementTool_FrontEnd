@@ -30,9 +30,9 @@ function handleClick() {
 
 function getStatusText(status) {
   const statusMap = {
-    'pending': '대기',
-    'in_progress': '진행중',
-    'done': '완료'
+    'pending': '待機',
+    'in_progress': '進行中',
+    'done': '完了'
   }
   return statusMap[status] || status
 }
@@ -43,7 +43,7 @@ function getStatusClass(status) {
 
 function getAssigneeName(employeeId) {
   const member = props.teamMembers.find(m => m.id === employeeId)
-  return member ? member.name : '미지정'
+  return member ? member.name : '未指定'
 }
 
 function formatDate(dateString) {

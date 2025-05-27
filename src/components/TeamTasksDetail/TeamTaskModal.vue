@@ -2,23 +2,23 @@
   .modal-overlay(v-if="isVisible" @click="closeModal")
     .modal-content(@click.stop)
       .modal-header
-        h2 팀 작업 상세내용
+        h2 チーム作業詳細内容
         .team-info
-          span.team-name {{`팀 이름: ${teamName}`}}
+          span.team-name {{`チーム名: ${teamName}`}}
       
       .modal-body
         .error(v-if="error") {{ error }}
         
         .form-group
-          label 작업 제목
+          label 作業タイトル
           input(
             v-model="editableTask.title"
-            placeholder="작업 제목을 입력하세요"
+            placeholder="作業タイトルを入力してください"
             :disabled="!isEditing"
           )
         
         .form-group
-          label 마감일
+          label 期限
           input(
             type="datetime-local"
             v-model="editableTask.due"
@@ -26,25 +26,25 @@
           )
         
         .form-group
-          label 상태
+          label ステータス
           select(v-model="editableTask.status" :disabled="!isEditing")
-            option(value="pending") 대기
-            option(value="in_progress") 진행중
-            option(value="completed") 완료
-            option(value="cancelled") 취소
+            option(value="pending") 待機
+            option(value="in_progress") 進行中
+            option(value="completed") 完了
+            option(value="cancelled") キャンセル
         
         .form-group
-          label 카테고리
+          label カテゴリ
           input(
             v-model="editableTask.category"
-            placeholder="카테고리 (예: 개발, 디자인, 기획)"
+            placeholder="カテゴリ (例: 開発、デザイン、企画)"
             :disabled="!isEditing"
           )
         
         .form-group
-          label 담당자
+          label 担当者
           select(v-model="editableTask.employee_id" :disabled="!isEditing")
-            option(value="" disabled) 담당자를 선택하세요
+            option(value="" disabled) 担当者を選択してください
             option(
               v-for="member in teamMembers"
               :key="member.id"
@@ -52,10 +52,10 @@
             ) {{ member.name }} ({{ member.role || 'Employee' }})
         
         .form-group
-          label 작업 상세내용
+          label 作業詳細内容
           textarea(
             v-model="editableTask.detail"
-            placeholder="작업에 대한 상세한 설명을 입력하세요"
+            placeholder="作業に関する詳細な説明を入力してください"
             :disabled="!isEditing"
             rows="4"
           )
@@ -64,27 +64,27 @@
           button.btn.edit-btn(
             v-if="!isEditing"
             @click="toggleEdit"
-          ) 작업 수정
+          ) 作業修正
           
           button.btn.save-btn(
             v-if="isEditing"
             @click="handleSave"
             :disabled="isSaving"
-          ) {{ isSaving ? '저장 중...' : '저장' }}
+          ) {{ isSaving ? '保存中...' : '保存' }}
           
           button.btn.cancel-btn(
             v-if="isEditing"
             @click="cancelEdit"
-          ) 취소
+          ) キャンセル
           
           button.btn.delete-btn(
             @click="handleDelete"
             :disabled="isDeleting"
-          ) {{ isDeleting ? '삭제 중...' : '삭제' }}
+          ) {{ isDeleting ? '削除中...' : '削除' }}
           
           button.btn.close-btn(
             @click="closeModal"
-          ) 닫기
+          ) 閉じる
 </template>
 
 <script setup>
@@ -130,11 +130,11 @@ const editableTask = ref({
 
 const originalTask = ref({})
 
-// props.task가 변경될 때마다 editableTask 업데이트
+// props.taskが変更される度にeditableTask更新
 watch(() => props.task, (newTask) => {
-  console.log('TeamTaskModal - task 변경:', newTask)
+  console.log('TeamTaskModal - task変更:', newTask)
   if (newTask) {
-    // due_at을 datetime-local 형식으로 변환
+    // due_atをdatetime-local形式に変換
     const dueValue = newTask.due_at ? 
       new Date(newTask.due_at).toISOString().slice(0, 16) : ''
     
@@ -150,9 +150,9 @@ watch(() => props.task, (newTask) => {
   }
 }, { immediate: true })
 
-// isVisible 변경 감지
+// isVisible変更検知
 watch(() => props.isVisible, (visible) => {
-  console.log('TeamTaskModal - isVisible 변경:', visible)
+  console.log('TeamTaskModal - isVisible変更:', visible)
   if (!visible) {
     isEditing.value = false
     error.value = null
@@ -172,17 +172,17 @@ function cancelEdit() {
 
 async function handleSave() {
   if (!editableTask.value.title.trim()) {
-    error.value = '작업 제목을 입력해주세요.'
+    error.value = '作業タイトルを入力してください。'
     return
   }
   
   if (!editableTask.value.due) {
-    error.value = '마감일을 설정해주세요.'
+    error.value = '期限を設定してください。'
     return
   }
   
   if (!editableTask.value.employee_id) {
-    error.value = '담당자를 선택해주세요.'
+    error.value = '担当者を選択してください。'
     return
   }
 
@@ -204,17 +204,17 @@ async function handleSave() {
     isEditing.value = false
     originalTask.value = { ...editableTask.value }
     
-    console.log('팀 태스크 업데이트 성공')
+    console.log('チームタスク更新成功')
   } catch (apiError) {
-    console.error('팀 태스크 업데이트 실패:', apiError)
-    error.value = apiError.message || '태스크 수정 중 오류가 발생했습니다.'
+    console.error('チームタスク更新失敗:', apiError)
+    error.value = apiError.message || 'タスク修正中にエラーが発生しました。'
   } finally {
     isSaving.value = false
   }
 }
 
 async function handleDelete() {
-  if (!confirm('정말로 이 작업을 삭제하시겠습니까?\n삭제된 작업은 복구할 수 없습니다.')) {
+  if (!confirm('本当にこの作業を削除しますか？\n削除された作業は復旧できません。')) {
     return
   }
   
@@ -227,19 +227,19 @@ async function handleDelete() {
     emit('task-deleted', props.task.id)
     closeModal()
     
-    console.log('팀 태스크 삭제 성공')
+    console.log('チームタスク削除成功')
   } catch (apiError) {
-    console.error('팀 태스크 삭제 실패:', apiError)
-    error.value = apiError.message || '태스크 삭제 중 오류가 발생했습니다.'
+    console.error('チームタスク削除失敗:', apiError)
+    error.value = apiError.message || 'タスク削除中にエラーが発生しました。'
   } finally {
     isDeleting.value = false
   }
 }
 
 function closeModal() {
-  console.log('TeamTaskModal closeModal 호출')
+  console.log('TeamTaskModal closeModal呼び出し')
   if (isEditing.value) {
-    if (confirm('편집 중인 내용이 있습니다. 정말로 닫으시겠습니까?')) {
+    if (confirm('編集中の内容があります。本当に閉じますか？')) {
       isEditing.value = false
       editableTask.value = { ...originalTask.value }
       error.value = null
@@ -251,11 +251,11 @@ function closeModal() {
 }
 
 function formatDate(dateString) {
-  if (!dateString) return '설정되지 않음'
+  if (!dateString) return '設定されていません'
   
   try {
     const date = new Date(dateString)
-    if (isNaN(date.getTime())) return '잘못된 날짜'
+    if (isNaN(date.getTime())) return '不正な日付'
     
     return date.toLocaleDateString('ko-KR', {
       year: 'numeric',
@@ -266,13 +266,13 @@ function formatDate(dateString) {
       hour12: false
     })
   } catch (error) {
-    return '잘못된 날짜'
+    return '不正な日付'
   }
 }
 
 function getAssigneeName(employeeId) {
   const member = props.teamMembers.find(m => m.id === employeeId)
-  return member ? `${member.name} (${member.role || '직원'})` : '미지정'
+  return member ? `${member.name} (${member.role || '職員'})` : '未指定'
 }
 </script>
 

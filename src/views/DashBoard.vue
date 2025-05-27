@@ -1,33 +1,33 @@
 <template lang="pug">
 .dashboard-grid
-  //- 상단 사용자 정보
+  //- 上部ユーザー情報
   UserTag(
     :userName="loginUserName"
     :userRole="loginUserRole"
   )
 
-  //- 왼쪽: 팀 목록 (자체 관리)
+  //- 左側：チームリスト（自己管理）
   TeamList(
     ref="teamListRef"
     @team-selected="handleTeamSelected"
     @teams-updated="handleTeamsUpdated"
   )
 
-  //- 중앙: 진행률 보드
+  //- 中央：進捗ボード
   ProgressBoard(
     ref="progressBoardRef"
     :selectedTeam="selectedTeam"
     :loading="loadingStates.progress"
   )
 
-  //- 오른쪽: 할 일 목록
+  //- 右側：ToDoリスト
   TaskList(
     :selectedTeam="selectedTeam"
     @task-status-change="handleTaskStatusChange"
     @delete-task="handleDeleteTask"
   )
 
-  //- 하단: 2:1 비율 컨테이너
+  //- 下部：2:1比率コンテナ
   .bottom-container
     CreateTaskForm(
       :selectedTeam="selectedTeam"
@@ -73,84 +73,84 @@ import UserTag from '@/components/dashBoard/UserTag.vue'
 // eslint-disable-next-line no-unused-vars
 import WorkspaceModal from '@/components/dashBoard/WorkspaceModal.vue'
 
-// Router 추가
+// Router追加
 const router = useRouter()
 
-// Store 초기화
+// Store初期化
 // eslint-disable-next-line no-unused-vars
 const userStore = useUserStore()
 const teamStore = useTeamStore()
 const taskStore = useTaskStore()
 const authStore = useAuthStore()
 
-//현재 로그인한 사용자 관련
+// 現在ログインしたユーザー関連
 // eslint-disable-next-line no-unused-vars
 const loginUser = computed(() => authStore.user)
 // eslint-disable-next-line no-unused-vars
-const loginUserName = computed(() => loginUser.value?.name || '사용자')
+const loginUserName = computed(() => loginUser.value?.name || 'ユーザー')
 // eslint-disable-next-line no-unused-vars
 const loginUserRole = computed(() => {
   const role = loginUser.value?.role
   if (role === 'Admin') {
-    return '관리자'
+    return '管理者'
   } else if (role === 'Employee') {
-    return '직원'
+    return '従業員'
   }
-  return '직원'
+  return '従業員'
 })
 
-// 팀 관련 상태 (TeamList에서 전달받음)
+// チーム関連状態（TeamListから受け取り）
 const teams = ref([])
 const selectedTeam = ref(null)
 
 // eslint-disable-next-line no-unused-vars
 const memberList = ref([])
 
-// 로딩 상태 관리
+// ローディング状態管理
 // eslint-disable-next-line no-unused-vars
 const loadingStates = ref({
   progress: false,
   stats: false
 })
 
-// 통계 데이터
+// 統計データ
 // eslint-disable-next-line no-unused-vars
 const teamStats = ref({})
 
 // eslint-disable-next-line no-unused-vars
 const workspaceStats = ref({})
 
-// Template Ref 추가
+// Template Ref追加
 const taskListRef = ref(null)
 const progressBoardRef = ref(null)
 
-// 모달 상태
+// モーダル状態
 const showWorkspaceModal = ref(false)
 
-// TeamList에서 전달받는 이벤트 핸들러들
+// TeamListから受け取るイベントハンドラー
 // eslint-disable-next-line no-unused-vars
 function handleTeamSelected(team) {
   selectedTeam.value = team
   
-  // teamStore에도 선택된 팀 설정
+  // teamStoreにも選択されたチーム設定
   teamStore.setSelectedTeam(team)
   
-  console.log('선택된 팀:', team)
+  console.log('選択されたチーム:', team)
   
-  // 선택된 팀에 따라 다른 컴포넌트들 업데이트
-  // 예: 해당 팀의 태스크 목록 로드, 멤버 목록 업데이트 등
+  // 選択されたチームに応じて他のコンポーネント更新
+  // 例：該当チームのタスクリスト読み込み、メンバーリスト更新など
 }
 
 // eslint-disable-next-line no-unused-vars
 function handleTeamsUpdated(updatedTeams) {
   teams.value = updatedTeams
-  console.log('팀 목록 업데이트됨:', updatedTeams)
+  console.log('チームリスト更新:', updatedTeams)
   
-  // 통계 데이터 업데이트
-  workspaceStats.value.전체팀수 = updatedTeams.length
+  // 統計データ更新
+  workspaceStats.value.全体チーム数 = updatedTeams.length
 }
 
-// 태스크 관련 이벤트 핸들러들
+// タスク関連イベントハンドラー
 // eslint-disable-next-line no-unused-vars
 async function handleTaskStatusChange(taskId, newStatus) {
   await taskStore.updateTaskStatus(taskId, newStatus)
@@ -161,37 +161,37 @@ async function handleDeleteTask(taskId) {
   await taskStore.deleteTask(taskId)
 }
 
-// CreateTaskForm에서 오는 이벤트 핸들러
+// CreateTaskFormから来るイベントハンドラー
 function handleTaskCreated(taskData) {
-  console.log('DashBoard에서 받은 새 태스크:', taskData)
+  console.log('DashBoardで受け取った新しいタスク:', taskData)
   
-  // TaskList 컴포넌트의 메서드 직접 호출
+  // TaskListコンポーネントのメソッド直接呼び出し
   if (taskListRef.value) {
     taskListRef.value.fetchTaskList()
   }
   
-  console.log('태스크가 성공적으로 생성되었습니다:', taskData.title)
+  console.log('タスクが正常に作成されました:', taskData.title)
 }
 
 function handleCreateTask(taskData) {
-  console.log('DashBoard handleCreateTask 호출됨:', taskData)
+  console.log('DashBoard handleCreateTask呼び出し:', taskData)
 }
 
-// 통계 관련 이벤트 핸들러들
+// 統計関連イベントハンドラー
 // eslint-disable-next-line no-unused-vars
 function handleTeamDetails() {
-  console.log('팀 상세 정보 보기')
+  console.log('チーム詳細情報表示')
   if(teamStore.selectedTeam){
     router.push(`/teamtasks`)
   }else{
-    alert('팀이 선택되지 않았습니다.')
+    alert('チームが選択されていません。')
     return
   }
 }
 
 // eslint-disable-next-line no-unused-vars
 function handleWorkspaceDetails() {
-  console.log('작업공간 상세 정보 보기')
+  console.log('ワークスペース詳細情報表示')
   showWorkspaceModal.value = true
 }
 
@@ -213,18 +213,18 @@ function handleCloseWorkspaceModal() {
   background-color: #f9fafb;
 }
 
-/* 첫 행: UserTag */
+/* 最初の行：UserTag */
 .dashboard-grid > *:nth-child(1) {
   grid-column: 1 / -1;
   margin-bottom: 16px;
 }
 
-/* 중간 행: 팀 목록, 진행률 보드, 할 일 목록 */
+/* 中間行：チームリスト、進捗ボード、ToDoリスト */
 .dashboard-grid > TeamList { grid-row: 2; grid-column: 1; }
 .dashboard-grid > ProgressBoard { grid-row: 2; grid-column: 2; }
 .dashboard-grid > TaskList { grid-row: 2; grid-column: 3; }
 
-/* 하단 컨테이너: 전체 너비 차지 */
+/* 下部コンテナ：全体幅占有 */
 .bottom-container {
   grid-row: 3;
   grid-column: 1 / -1;
@@ -232,12 +232,12 @@ function handleCloseWorkspaceModal() {
   gap: 16px;
 }
 
-/* CreateTaskForm: 2/3 너비 */
+/* CreateTaskForm：2/3幅 */
 .bottom-container > CreateTaskForm {
   flex: 1;
 }
 
-/* OverviewPanel: 1/3 너비 */
+/* OverviewPanel：1/3幅 */
 .bottom-container > OverviewPanel {
   flex: 1;
 }

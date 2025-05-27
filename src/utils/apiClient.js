@@ -1,29 +1,29 @@
 import { getApiUrl, getAuthHeaders, DEFAULT_REQUEST_OPTIONS, HTTP_STATUS } from '@/config/api'
 
-// API 클라이언트 클래스
+// APIクライアントクラス
 class ApiClient {
   constructor() {
     this.token = null
   }
 
-  // 토큰 설정
+  // トークン設定
   setToken(token) {
     this.token = token
   }
 
-  // 토큰 제거
+  // トークン削除
   clearToken() {
     this.token = null
   }
 
-  // 기본 요청 메서드
-  //endpoint를 보내고, option은 기본 설정외에 설정할 것이 있으면 보낸다
+  // 基本リクエストメソッド
+  //endpointを送信し、optionは基本設定以外に設定するものがあれば送信する
   async request(endpoint, options = {}, queryParams = {}) {
     const url = getApiUrl(endpoint, queryParams)
-    // Header {Authorization: Bearer token} 형식
+    // Header {Authorization: Bearer token} 形式
     const headers = getAuthHeaders(this.token)
     
-    // DEFAULT_REQUEST_OPTIONS의 모든 속성을 열거하고, options의 모든 속성을 열거한다, option은 같은 속성이 있으면 덮어씌운다
+    // DEFAULT_REQUEST_OPTIONSのすべてのプロパティを列挙し、optionsのすべてのプロパティを列挙する、optionは同じプロパティがあれば上書きする
     const config = {
       ...DEFAULT_REQUEST_OPTIONS,
       ...options,
@@ -34,35 +34,35 @@ class ApiClient {
     }
 
     try {
-        //config는 사전에 정의
+        //configは事前に定義
       const response = await fetch(url, config)
       
-      // 204 No Content는 성공이지만 응답 본문이 없음
+      // 204 No Contentは成功だがレスポンス本文がない
       if (response.status === HTTP_STATUS.NO_CONTENT) {
         return null
       }
       
-      //에러 메세지 반환시, 
+      //エラーメッセージ返却時、 
       if (!response.ok) {
-        //json 파싱이 실패할 경우 빈 객체 반환하게
+        //jsonパースが失敗した場合空オブジェクト返却するように
         const errorData = await response.json().catch(() => ({}))
-        //된다면 에러 메세지를 받고, 없을 경우 에러코드로 Error 생성
+        //できればエラーメッセージを受け取り、ない場合はエラーコードでError生成
         const error = new Error(errorData.message || `HTTP error! status: ${response.status}`)
         error.status = response.status
         error.data = errorData
         throw error
       }
       
-      //json 파싱, js 객체로 변환
+      //jsonパース、jsオブジェクトに変換
       const data = await response.json()
       return data
     } catch (error) {
-      console.error('API 요청 오류:', error)
+      console.error('APIリクエストエラー:', error)
       throw error
     }
   }
 
-  // GET 요청
+  // GETリクエスト
   async get(endpoint, queryParams = {}, options = {}) {
     return this.request(endpoint, {
       method: 'GET',
@@ -70,7 +70,7 @@ class ApiClient {
     }, queryParams)
   }
 
-  // POST 요청
+  // POSTリクエスト
   async post(endpoint, data = null, options = {}) {
     return this.request(endpoint, {
       method: 'POST',
@@ -79,7 +79,7 @@ class ApiClient {
     })
   }
 
-  // PUT 요청
+  // PUTリクエスト
   async put(endpoint, data = null, options = {}) {
     return this.request(endpoint, {
       method: 'PUT',
@@ -88,7 +88,7 @@ class ApiClient {
     })
   }
 
-  // DELETE 요청
+  // DELETEリクエスト
   async delete(endpoint, options = {}) {
     return this.request(endpoint, {
       method: 'DELETE',
@@ -96,7 +96,7 @@ class ApiClient {
     })
   }
 
-  // PATCH 요청
+  // PATCHリクエスト
   async patch(endpoint, data = null, options = {}) {
     return this.request(endpoint, {
       method: 'PATCH',
@@ -106,7 +106,7 @@ class ApiClient {
   }
 }
 
-// 싱글톤 인스턴스 생성
+// シングルトンインスタンス生成
 const apiClient = new ApiClient()
 
 export default apiClient 

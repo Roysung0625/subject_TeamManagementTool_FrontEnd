@@ -1,136 +1,136 @@
 import apiClient from '@/utils/apiClient'
 import { API_ENDPOINTS } from '@/config/api'
 
-// 팀 관련 API 서비스
+// チーム関連APIサービス
 export const teamService = {
   /**
-   * 팀 목록 조회
-   * @returns {Promise<Array>} 팀 목록 배열
-   * @throws {Error} API 요청 실패 시 에러
+   * チームリスト照会
+   * @returns {Promise<Array>} チームリスト配列
+   * @throws {Error} APIリクエスト失敗時エラー
    */
   async getTeams() {
     try {
       const data = await apiClient.get(API_ENDPOINTS.TEAMS.LIST)
       return data
     } catch (error) {
-      console.error('팀 목록 조회 실패:', error)
+      console.error('チームリスト照会失敗:', error)
       throw error
     }
   },
 
   /**
-   * 팀 생성 (Admin 권한 필요)
-   * @param {Object} teamData - 생성할 팀 정보
-   * @param {string} teamData.name - 팀 이름
-   * @returns {Promise<Object>} 생성된 팀 정보
-   * @throws {Error} API 요청 실패 시 에러
+   * チーム作成（Admin権限必要）
+   * @param {Object} teamData - 作成するチーム情報
+   * @param {string} teamData.name - チーム名
+   * @returns {Promise<Object>} 作成されたチーム情報
+   * @throws {Error} APIリクエスト失敗時エラー
    */
   async createTeam(teamData) {
     try {
       const data = await apiClient.post(API_ENDPOINTS.TEAMS.CREATE, teamData)
       return data
     } catch (error) {
-      console.error('팀 생성 실패:', error)
+      console.error('チーム作成失敗:', error)
       throw error
     }
   },
 
   /**
-   * 팀 정보 수정 (Admin 권한 필요)
-   * @param {number} teamId - 수정할 팀 ID
-   * @param {Object} teamData - 수정할 팀 정보
-   * @param {string} teamData.name - 팀 이름
-   * @returns {Promise<Object>} 수정된 팀 정보
-   * @throws {Error} API 요청 실패 시 에러
+   * チーム情報修正（Admin権限必要）
+   * @param {number} teamId - 修正するチームID
+   * @param {Object} teamData - 修正するチーム情報
+   * @param {string} teamData.name - チーム名
+   * @returns {Promise<Object>} 修正されたチーム情報
+   * @throws {Error} APIリクエスト失敗時エラー
    */
   async updateTeam(teamId, teamData) {
-    try {                                //주소        | url                | body
+    try {                                //アドレス        | url                | body
       const data = await apiClient.patch(API_ENDPOINTS.TEAMS.UPDATE(teamId), teamData)
       return data
     } catch (error) {
-      console.error('팀 수정 실패:', error)
+      console.error('チーム修正失敗:', error)
       throw error
     }
   },
 
   /**
-   * 팀 삭제 (Admin 권한 필요)
-   * @param {number} teamId - 삭제할 팀 ID
-   * @returns {Promise<null>} 삭제 결과 - api상 null만 반환
-   * @throws {Error} API 요청 실패 시 에러
+   * チーム削除（Admin権限必要）
+   * @param {number} teamId - 削除するチームID
+   * @returns {Promise<null>} 削除結果 - api上nullのみ返却
+   * @throws {Error} APIリクエスト失敗時エラー
    */
   async deleteTeam(teamId) {
     try {
       const data = await apiClient.delete(API_ENDPOINTS.TEAMS.DELETE(teamId))
       return data
     } catch (error) {
-      console.error('팀 삭제 실패:', error)
+      console.error('チーム削除失敗:', error)
       throw error
     }
   },
 
   /**
-   * 팀 상세 조회
-   * @param {number} teamId - 조회할 팀 ID
-   * @returns {Promise<Object>} 팀 상세 정보
-   * @throws {Error} API 요청 실패 시 에러
+   * チーム詳細照会
+   * @param {number} teamId - 照会するチームID
+   * @returns {Promise<Object>} チーム詳細情報
+   * @throws {Error} APIリクエスト失敗時エラー
    */
   async getTeamDetail(teamId) {
     try {
       const data = await apiClient.get(API_ENDPOINTS.TEAMS.DETAIL(teamId))
       return data
     } catch (error) {
-      console.error('팀 상세 조회 실패:', error)
+      console.error('チーム詳細照会失敗:', error)
       throw error
     }
   },
 
   /**
-   * 특정 팀의 멤버 목록 조회 (인증 필요)
-   * @param {number} teamId - 팀 ID
-   * @returns {Promise<Array>} 팀 멤버 목록 배열
-   * @throws {Error} API 요청 실패 시 에러
+   * 特定チームのメンバーリスト照会（認証必要）
+   * @param {number} teamId - チームID
+   * @returns {Promise<Array>} チームメンバーリスト配列
+   * @throws {Error} APIリクエスト失敗時エラー
    */
   async getTeamMembers(teamId) {
     try {
       const data = await apiClient.get(API_ENDPOINTS.TEAMS.MEMBERS(teamId))
       return data
     } catch (error) {
-      console.error('팀 멤버 목록 조회 실패:', error)
+      console.error('チームメンバーリスト照会失敗:', error)
       throw error
     }
   },
 
   /**
-   * 팀 멤버 관리 - 추가/삭제 (Admin 권한 필요)
-   * @param {number} teamId - 팀 ID
-   * @param {Object} memberData - 멤버 관리 데이터
-   * @param {Array<number>} [memberData] - 사원 ID 배열
-   * @returns {Promise<Object>} 멤버 관리 결과
-   * @throws {Error} API 요청 실패 시 에러
+   * チームメンバー管理 - 追加/削除（Admin権限必要）
+   * @param {number} teamId - チームID
+   * @param {Object} memberData - メンバー管理データ
+   * @param {Array<number>} [memberData] - 社員ID配列
+   * @returns {Promise<Object>} メンバー管理結果
+   * @throws {Error} APIリクエスト失敗時エラー
    */
   async manageTeamMembers(teamId, memberData) {
     try {
       const data = await apiClient.patch(API_ENDPOINTS.TEAMS.MANAGEMENT(teamId), memberData)
       return data
     } catch (error) {
-      console.error('팀 멤버 관리 실패:', error)
+      console.error('チームメンバー管理失敗:', error)
       throw error
     }
   },
 
   /**
-   * 특정 사원이 속한 팀 목록 조회 (인증 필요)
-   * @param {number} employeeId - 사원 ID
-   * @returns {Promise<Array>} 사원이 속한 팀 목록 배열
-   * @throws {Error} API 요청 실패 시 에러
+   * 特定社員が所属するチームリスト照会（認証必要）
+   * @param {number} employeeId - 社員ID
+   * @returns {Promise<Array>} 社員が所属するチームリスト配列
+   * @throws {Error} APIリクエスト失敗時エラー
    */
   async getEmployeeTeams(employeeId) {
     try {
       const data = await apiClient.get(API_ENDPOINTS.TEAMS.BY_EMPLOYEE(employeeId))
       return data
     } catch (error) {
-      console.error('사원 팀 목록 조회 실패:', error)
+      console.error('社員チームリスト照会失敗:', error)
       throw error
     }
   }

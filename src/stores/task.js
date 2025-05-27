@@ -2,11 +2,11 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
 /**
- * 태스크 관련 상태 관리 스토어
- * Composition API 스타일로 구현
+ * タスク関連状態管理ストア
+ * Composition APIスタイルで実装
  */
 export const useTaskStore = defineStore('task', () => {
-  // 상태
+  // 状態
   const tasks = ref([])
 
   const filter = ref({
@@ -18,7 +18,7 @@ export const useTaskStore = defineStore('task', () => {
   const loading = ref(false)
   const error = ref(null)
 
-  // 계산된 속성
+  // 計算されたプロパティ
   const isLoading = computed(() => loading.value)
   const taskCount = computed(() => tasks.value.length)
 
@@ -39,24 +39,24 @@ export const useTaskStore = defineStore('task', () => {
     }
   })
 
-  // 액션
+  // アクション
   /**
-   * 에러 설정
-   * @param {string} errorMessage - 에러 메시지
+   * エラー設定
+   * @param {string} errorMessage - エラーメッセージ
    */
   function setError(errorMessage) {
     error.value = errorMessage
   }
 
   /**
-   * 에러 초기화
+   * エラー初期化
    */
   function clearError() {
     error.value = null
   }
 
   /**
-   * 필터 초기화
+   * フィルター初期化
    */
   function resetFilter() {
     filter.value = {
@@ -66,21 +66,21 @@ export const useTaskStore = defineStore('task', () => {
     }
   }
 
-  // 스토어 반환
+  // ストア返却
   return {
-    // 상태
+    // 状態
     tasks,
     filter,
     loading,
     error,
     
-    // 계산된 속성
+    // 計算されたプロパティ
     isLoading,
     taskCount,
     getFilteredTasks,
     getTasksByStatus,
     
-    // 액션
+    // アクション
     setError,
     clearError,
     resetFilter

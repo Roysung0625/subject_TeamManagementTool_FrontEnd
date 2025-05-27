@@ -2,30 +2,30 @@
   .modal-overlay(v-if="isVisible" @click="closeModal")
     .modal-content(@click.stop)
       .modal-header
-        h2 팀 목록 관리 상세
+        h2 チームリスト管理詳細
         .search-section
           input.search-input(
             v-model="addMemberListString"
-            placeholder="추가할 팀원의 사번 ,로 구분"
+            placeholder="追加するチームメンバーの社員番号 ,で区切り"
           )
-          button.search-btn(@click="handleAddMember") 추가
+          button.search-btn(@click="handleAddMember") 追加
         .action-section
           button.delete-btn(
             @click="handleDeleteMembers"
             :disabled="selectedTeamMember.length === 0 || isDeleting"
-          ) {{ isDeleting ? '삭제 중...' : '선택된 팀원 삭제' }}
+          ) {{ isDeleting ? '削除中...' : '選択されたチームメンバー削除' }}
       
       .modal-body
         .error(v-if="error") {{ error }}
-        .loading(v-if="loading") 팀 목록을 불러오는 중...
+        .loading(v-if="loading") チームリストを読み込み中...
         
         .table-container(v-else)
           table.teams-table
             thead
               tr
                 th
-                th 사번
-                th 이름
+                th 社員番号
+                th 名前
             tbody
               tr(
                 v-for="member in teamMembers"
@@ -42,7 +42,7 @@
                 td {{ member.name }}
         
         .button-group
-          button.btn.close-btn(@click="closeModal") 닫기
+          button.btn.close-btn(@click="closeModal") 閉じる
 </template>
 
 <script setup>
@@ -66,29 +66,29 @@ const error = ref(null)
 const addMemberListString = ref('')
 const addMemberList = ref('')
 
-// 팀 목록 가져오기
+// チームリスト取得
 const selectedTeam = computed(() => teamStore.selectedTeam)
 const teamMembers = ref([])
 const currentTeamMembers = ref([])
 const selectedTeamMember = ref([])
 const isDeleting = ref(false)
 
-// 모달이 열릴 때마다 초기화
+// モーダルが開かれるたびに初期化
 watch(() => props.isVisible, (visible) => {
   if (visible) {
     error.value = null
-    // 팀 목록 새로고침
+    // チームリスト更新
     fetchTeamMembers()
   }
 })
 
-//팀 새로고침
+// チーム更新
 watch(() => teamMembers, () => {
   currentTeamMembers.value = teamMembers.value.map(member => member.id)
   console.log('currentTeamMembers', currentTeamMembers.value)
 })
 
-//선택된 팀 목록
+// 選択されたチームリスト
 watch(() => selectedTeamMember.value, () => {
   console.log('selectedTeamMember', selectedTeamMember.value)
 })
@@ -101,7 +101,7 @@ async function fetchTeamMembers() {
     currentTeamMembers.value = teamMembers.value.map(member => member.id)
     return teamMembers
   }catch(error){
-    console.error('팀 멤버 조회 실패:', error)
+    console.error('チームメンバー照会失敗:', error)
     teamMembers.value = []
   }
 }
@@ -113,19 +113,19 @@ async function handleAddMember() {
     const response = await teamService.manageTeamMembers(selectedTeam.value.id, { employees : addMemberList.value })
     teamMembers.value = response
   }catch(error){
-    console.error('팀 멤버 추가 실패:', error)
+    console.error('チームメンバー追加失敗:', error)
   }
   addMemberListString.value = ''
 }
 
 async function handleDeleteMembers() {
-  //선택된 팀원 제외한 팀원 목록
+  // 選択されたチームメンバーを除いたチームメンバーリスト
   const remainMemberList = currentTeamMembers.value.filter(member => !selectedTeamMember.value.includes(member))
   try{
     const response = await teamService.manageTeamMembers(selectedTeam.value.id, { employees : remainMemberList })
     teamMembers.value = response
   }catch(error){
-    console.error('팀 멤버 삭제 실패:', error)
+    console.error('チームメンバー削除失敗:', error)
   }
 }
 

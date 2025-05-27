@@ -37,7 +37,7 @@ defineProps({
   },
   loadingText: {
     type: String,
-    default: '로딩 중...'
+    default: '読み込み中...'
   },
   fullWidth: {
     type: Boolean,
