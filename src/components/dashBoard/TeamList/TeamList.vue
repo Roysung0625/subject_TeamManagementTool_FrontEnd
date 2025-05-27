@@ -154,8 +154,7 @@ async function handleDeleteTeam(team) {
 
 // 팀 선택
 function handleSelectTeam(team) {
-  selectedTeam.value = team
-  emit('team-selected', team)
+  teamStore.selectedTeam = team
 }
 
 // 컴포넌트 마운트 시 팀 목록 로드

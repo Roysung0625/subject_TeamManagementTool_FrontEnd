@@ -6,6 +6,7 @@
 </template>
 
 <script setup>
+/* eslint-disable */
 import { computed, defineProps } from 'vue'
 
 const props = defineProps({

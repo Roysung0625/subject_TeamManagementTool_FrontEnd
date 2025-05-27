@@ -3,44 +3,57 @@
   .panel-header
     span Create Task
   .panel-body
+    .error(v-if="error") {{ error }}
     input(
       v-model="form.title"
       placeholder="Task Title"
+      :disabled="isCreating"
     )
     input(
-      type="date"
+      type="datetime-local"
       v-model="form.due"
+      :disabled="isCreating"
     )
-    select(v-model="form.assignee" v-if="currentMemberRole === 'Admin'")
-      option(value="") Select Assignee
+    select(v-model="form.employee_id" :disabled="currentMemberRole !== 'Admin' || isCreating")
       option(
         v-for="member in members"
         :key="member.id"
-        :value="member.name"
+        :value="member.id"
       ) {{ member.name }}
+    select(v-model="form.status" :disabled="isCreating")
+      option(value="pending") Pending
+      option(value="in_progress") In Progress
+      option(value="completed") Completed
+      option(value="cancelled") Cancelled
+    input(
+      v-model="form.category"
+      placeholder="Category (e.g., work, personal, urgent)"
+      :disabled="isCreating"
+    )
     textarea(
-      v-model="form.description"
-      placeholder="Description"
+      v-model="form.detail"
+      placeholder="Task Details"
+      :disabled="isCreating"
     )
     button.btn(
       @click="handleCreate"
-      :disabled="loading"
-    ) {{ loading ? 'Creating...' : 'Create' }}
+      :disabled="isCreating"
+    ) {{ isCreating ? 'Creating...' : 'Create Task' }}
 </template>
 
 <script setup>
 /* eslint-disable */
-import { reactive, defineProps, defineEmits, ref, watch } from 'vue'
+import { reactive, defineProps, defineEmits, ref, watch, computed} from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { useTeamStore } from '@/stores/team'
+import { taskService } from '@/services/taskService'
+import {teamService} from '@/services/teamService'
 
-const authStore = useAuthStore()
-const memberId = authStore.userId
-const currentMemberRole = authStore.userRole
-
+// Props 정의
 const props = defineProps({
   members: {
     type: Array,
-    required: true
+    default: () => []
   },
   teams: {
     type: Array,
@@ -49,52 +62,126 @@ const props = defineProps({
   loading: {
     type: Boolean,
     default: false
-  },
-  currentMemberRole: {
-    type: String,
-    required: true,
-    default: 'Employee'
-  },
-  currentMemberName: {
-    type: String,
-    required: true
   }
 })
 
-const emit = defineEmits(['create'])
+// Events 정의
+const emit = defineEmits(['create', 'task-created'])
 
+const authStore = useAuthStore()
+const teamStore = useTeamStore()
+
+const currentMemberId = computed(() => authStore.userId)
+const currentMemberRole = computed(() => authStore.userRole)
+const currentMemberName = computed(() => authStore.userName)
+const selectedTeam = computed(() => teamStore.selectedTeam)
+
+const error = ref(null)
+const isCreating = ref(false)
+const members = ref([])
+
+// console.log('currentMemberRole', currentMemberRole.value)
+// console.log('currentSelectedTeam', currentSelectedTeam.value)
+// console.log('members', members.value)
+
+//ref와 같은 반응형 '객체', ref는 객체를 새로 할당하지만 reactive는 객체 안을 바꾸는 식 (가볍다)
 const form = reactive({ 
-  title: '', 
-  due: '', 
-  description: '',
-  assignee: props.currentMemberRole === 'Admin' ? '' : props.currentMemberName,
-  priority: '',
-  status: 'todo'
+  employee_id: null,
+  title: '',
+  status: 'pending',
+  category: '',
+  detail: '',
+  due: ''
 })
 
-// watch를 추가하여 role이 Admin이 아닐 경우 항상 현재 사용자로 할당되도록 합니다
-watch(() => props.currentMemberRole, (newRole) => {
-  if (newRole !== 'Admin') {
-    form.assignee = props.currentMemberRole
-  }
-})
+console.log('form after initialization', form)
 
-// eslint-disable-next-line no-unused-vars
-function handleCreate() {
-  if (!form.title || !form.due || !form.assignee || !form.priority) {
-    alert('Please fill in all required fields')
+async function createTask() {
+  console.log('createTask in CreateTaskForm.vue 호출됨')
+  console.log('form in CreateTaskForm.vue', form)
+  
+  // 필수 필드 검증
+  if (!form.title || !form.due || !form.employee_id) {
+    error.value = '모든 필수 필드를 입력해주세요.'
     return
   }
+
+  // due 날짜를 ISO 형식으로 변환
+  const formData = {
+    ...form,
+    due: new Date(form.due).toISOString()
+  }
   
-  emit('create', { ...form })
+  isCreating.value = true
+  error.value = null
   
-  // Reset form
+  try {
+    console.log('전송할 데이터:', formData)
+    const response = await taskService.createTask(formData)
+    console.log('태스크 생성 성공:', response)
+    
+    // 부모 컴포넌트에 태스크 생성 완료 이벤트 발생
+    emit('task-created', response)
+    emit('create', response)
+    
+    // 폼 초기화
+    resetForm()
+    
+  } catch (apiError) {
+    console.error('API 태스크 생성 실패:', apiError)
+    error.value = apiError.message || '태스크 생성 중 오류가 발생했습니다.'
+  } finally {
+    isCreating.value = false
+  }
+}
+
+function resetForm() {
   form.title = ''
   form.due = ''
-  form.description = ''
-  form.assignee = ''
-  form.priority = ''
+  form.category = ''
+  form.detail = ''
+  form.status = 'pending'
+  // employee_id는 watch에서 자동으로 설정되므로 건드리지 않음
 }
+
+function handleCreate() {
+  if (!form.title || !form.due || !form.employee_id) {
+    console.log('form validation failed:', {
+      title: form.title,
+      due: form.due,
+      employee_id: form.employee_id
+    })
+    alert('Please fill in all required fields (Title, Due Date, Assignee)')
+    return
+  }
+
+  createTask()
+}
+
+async function getTeamMembers() {
+  if (!selectedTeam?.value?.id) {
+    console.log('선택된 팀이 없습니다. in CreateTaskForm.vue')
+    members.value = []
+    return
+  }
+
+  try {
+    console.log('selectedTeam.value.id in CreateTaskForm.vue', selectedTeam.value.id)
+    const response = await teamService.getTeamMembers(selectedTeam.value.id)
+    console.log('팀 멤버 목록: in CreateTaskForm.vue', response)
+    members.value = response
+  } catch (error) {
+    console.error('팀 멤버 목록 가져오기 실패:', error)
+    members.value = []
+  }
+}
+
+// watch에서 immediate: true로 변경하여 초기 로드 시에도 실행
+watch(selectedTeam, (newTeam) => {
+  console.log('selectedTeam 변경됨:', newTeam)
+  getTeamMembers()
+}, { immediate: true })
+
 </script>
 
 <style scoped>
@@ -112,6 +199,15 @@ function handleCreate() {
 .create-task textarea { 
   resize: vertical; 
   min-height: 80px; 
+}
+
+.error {
+  background-color: #fee;
+  color: #c33;
+  padding: 8px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  border: 1px solid #fcc;
 }
 
 .btn { 

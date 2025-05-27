@@ -93,17 +93,7 @@ export const teamService = {
    */
   async getTeamMembers(teamId) {
     try {
-      // teamId 유효성 검사
-      if (!teamId || teamId === null || teamId === undefined) {
-        throw new Error('유효하지 않은 팀 ID입니다.')
-      }
-      
-      const endpoint = API_ENDPOINTS.TEAMS.MEMBERS(teamId)
-      if (!endpoint) {
-        throw new Error('API 엔드포인트를 생성할 수 없습니다.')
-      }
-      
-      const data = await apiClient.get(endpoint)
+      const data = await apiClient.get(API_ENDPOINTS.TEAMS.MEMBERS(teamId))
       return data
     } catch (error) {
       console.error('팀 멤버 목록 조회 실패:', error)

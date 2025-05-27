@@ -40,7 +40,7 @@ defineEmits(['team-details', 'workspace-details'])
 }
 
 .btn.full { 
-  width: 350%; 
+  width: 150%; 
   text-align: center; 
   padding: 12px 20px;
   font-size: 14px;

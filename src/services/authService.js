@@ -34,7 +34,6 @@ export const authService = {
   /**
    * 로그인
    * @param {Object} credentials - 로그인 정보
-   * @param {string} credentials.email - 이메일 주소
    * @param {string} credentials.password - 비밀번호
    * @returns {Promise<Object>} 로그인 결과 (토큰 포함)
    * @throws {Error} API 요청 실패 시 에러
@@ -43,6 +42,7 @@ export const authService = {
     const authStore = useAuthStore()
     try {
       const data = await apiClient.post(API_ENDPOINTS.AUTH.LOGIN, credentials)
+      console.log('data in authService.js', data)
       
       // 로그인 성공 시 토큰 저장
       if (data.token) {
@@ -50,6 +50,7 @@ export const authService = {
       }
       //인증 데이터(token, employee) 저장
       authStore.setAuthData(data)
+      console.log('authStore.user in authService.js', authStore.user.value)
 
       return data
     } catch (error) {

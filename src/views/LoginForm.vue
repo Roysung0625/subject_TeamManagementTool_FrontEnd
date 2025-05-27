@@ -101,7 +101,7 @@ async function handleLogin() {
     authStore.setAuthData(response)
     
     console.log('로그인 성공:', authStore.user)
-    router.push('/dashboard')
+    await router.push('/dashboard')
     
   } catch (error) {
     console.error('로그인 실패:', error)

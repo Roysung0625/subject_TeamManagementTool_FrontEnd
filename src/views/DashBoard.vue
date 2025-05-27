@@ -21,9 +21,7 @@
 
   //- 오른쪽: 할 일 목록
   TaskList(
-    :tasks="taskStore.getFilteredTasks"
-    :loading="taskStore.loading"
-    :filter="taskStore.filter"
+    ref="taskListRef"
     @statusChange="handleTaskStatusChange"
     @delete="handleDeleteTask"
   )
@@ -35,6 +33,7 @@
       :teams="teams"
       :loading="taskStore.loading"
       @create="handleCreateTask"
+      @task-created="handleTaskCreated"
     )
     OverviewPanel(
       :teamStats="teamStats"
@@ -46,6 +45,7 @@
 </template>
 
 <script setup>
+/* eslint-disable */
 import { ref, computed } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { useTeamStore } from '@/stores/team'
@@ -93,22 +93,7 @@ const teams = ref([])
 const selectedTeam = ref(null)
 
 // eslint-disable-next-line no-unused-vars
-const memberList = ref([
-  { 
-    id: 1, 
-    name: '김철수', 
-    progress: 75,
-    role: '프론트엔드 개발자',
-    tasks: ['UI 개발', 'API 연동']
-  },
-  { 
-    id: 2, 
-    name: '이영희', 
-    progress: 40,
-    role: '백엔드 개발자',
-    tasks: ['API 개발']
-  }
-])
+const memberList = ref([])
 
 // 로딩 상태 관리
 // eslint-disable-next-line no-unused-vars
@@ -119,20 +104,13 @@ const loadingStates = ref({
 
 // 통계 데이터
 // eslint-disable-next-line no-unused-vars
-const teamStats = ref({
-  완료된할일: 15,
-  진행중할일: 8,
-  다가오는마감일: 3,
-  평균진행률: 65
-})
+const teamStats = ref({})
 
 // eslint-disable-next-line no-unused-vars
-const workspaceStats = ref({
-  전체팀수: 5,
-  전체멤버수: 25,
-  진행중프로젝트: 8,
-  월간진행률: 70
-})
+const workspaceStats = ref({})
+
+// Template Ref 추가
+const taskListRef = ref(null)
 
 // TeamList에서 전달받는 이벤트 핸들러들
 // eslint-disable-next-line no-unused-vars
@@ -168,9 +146,20 @@ async function handleDeleteTask(taskId) {
   await taskStore.deleteTask(taskId)
 }
 
-// eslint-disable-next-line no-unused-vars
-async function handleCreateTask(newTask) {
-  await taskStore.addTask(newTask)
+// CreateTaskForm에서 오는 이벤트 핸들러
+function handleTaskCreated(taskData) {
+  console.log('DashBoard에서 받은 새 태스크:', taskData)
+  
+  // TaskList 컴포넌트의 메서드 직접 호출
+  if (taskListRef.value) {
+    taskListRef.value.fetchTaskList()
+  }
+  
+  console.log('태스크가 성공적으로 생성되었습니다:', taskData.title)
+}
+
+function handleCreateTask(taskData) {
+  console.log('DashBoard handleCreateTask 호출됨:', taskData)
 }
 
 // 통계 관련 이벤트 핸들러들
@@ -218,7 +207,7 @@ function handleWorkspaceDetails() {
 
 /* CreateTaskForm: 2/3 너비 */
 .bottom-container > CreateTaskForm {
-  flex: 2;
+  flex: 1;
 }
 
 /* OverviewPanel: 1/3 너비 */

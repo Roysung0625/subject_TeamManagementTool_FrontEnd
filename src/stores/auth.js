@@ -30,6 +30,9 @@ export const useAuthStore = defineStore('auth', () => {
    * @param {Object} authData.user - 사용자 정보
    */
   function setAuthData(authData) {
+    console.log('setAuthData in auth.js', authData)
+    console.log('authData.employee in auth.js', authData.employee)
+
     token.value = authData.token
     user.value = authData.employee || authData.data?.employee
     
@@ -55,7 +58,6 @@ export const useAuthStore = defineStore('auth', () => {
     // API 클라이언트 토큰 제거
     apiClient.clearToken()
   }
-
 
   /**
    * 로딩 상태 설정
