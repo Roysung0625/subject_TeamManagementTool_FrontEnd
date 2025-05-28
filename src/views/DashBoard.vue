@@ -194,12 +194,11 @@ function handleTeamDetails() {
 function handleWorkspaceDetails() {
   console.log('ワークスペース詳細情報表示')
   if(teamStore.selectedTeam){
-    router.push(`/teamtasks`)
+    showWorkspaceModal.value = true
   }else{
     alert('チームが選択されていません。')
     return
   }
-  showWorkspaceModal.value = true
 }
 
 function handleCloseWorkspaceModal() {
